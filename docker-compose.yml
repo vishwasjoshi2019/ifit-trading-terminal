@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  trading-terminal:
+    build: .
+    ports:
+      - "8501:8501"
+      - "8000:8000"
+    environment:
+      - MARKET_FEED_PROVIDER=SIMULATION
+      - DHAN_CLIENT_ID=${DHAN_CLIENT_ID:-}
+      - DHAN_ACCESS_TOKEN=${DHAN_ACCESS_TOKEN:-}
+      - KITE_API_KEY=${KITE_API_KEY:-}
+      - KITE_ACCESS_TOKEN=${KITE_ACCESS_TOKEN:-}
+    restart: unless-stopped

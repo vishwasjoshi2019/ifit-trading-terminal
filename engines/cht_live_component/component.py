@@ -56,6 +56,30 @@ export default function(component) {
                 }
             );
             container.__ifitChart = { chart: chart, series: series, overlays: {} };
+
+            // Connect live WebSocket stream for 60 FPS tick updates
+            try {
+                const wsUrl = data.ws_url || "ws://localhost:8000/ws/market";
+                const activeSym = (data.symbol || "NIFTY").toUpperCase();
+                const ws = new WebSocket(wsUrl);
+                ws.onmessage = function(event) {
+                    try {
+                        const payload = JSON.parse(event.data);
+                        if (payload.type === "tick" && payload.data && payload.data.symbol === activeSym) {
+                            const tick = payload.data;
+                            const t = Math.floor(new Date(tick.timestamp).getTime() / 1000);
+                            series.update({
+                                time: t,
+                                open: Number(tick.open || tick.ltp),
+                                high: Number(tick.high || tick.ltp),
+                                low: Number(tick.low || tick.ltp),
+                                close: Number(tick.ltp)
+                            });
+                        }
+                    } catch (e) {}
+                };
+                container.__ifitWs = ws;
+            } catch (e) {}
         }
 
         container.__ifitChart.series.setData(data.candles || []);
@@ -375,7 +399,7 @@ def _to_timestamp(value):
         ts = ts.tz_convert("UTC")
     return int(ts.timestamp())
 
-def render_live_chart(figure, height: int = 700, key: str | None = None, timestamps=None, ohlcv=None, poc=None, profile=None, footprint_df=None):
+def render_live_chart(figure, height: int = 700, key: str | None = None, timestamps=None, ohlcv=None, poc=None, profile=None, footprint_df=None, symbol: str = "NIFTY", ws_url: str = "ws://localhost:8000/ws/market"):
     trace = _find_candle_trace(figure)
     x_raw = timestamps if timestamps is not None else getattr(trace, 'x', None)
     op_raw = getattr(trace, 'open', None)
@@ -459,54 +483,22 @@ def render_live_chart(figure, height: int = 700, key: str | None = None, timesta
                     continue
     if CHT_LIVE_COMPONENT is not None:
         try:
-            return CHT_LIVE_COMPONENT(data={'candles': list(unique.values()), 'overlays': overlays, 'market_data': market_data, 'poc': (None if poc is None else float(poc)), 'profile': profile_data, 'footprint': footprint_data}, key=key)
+            return CHT_LIVE_COMPONENT(
+                data={
+                    'candles': list(unique.values()),
+                    'symbol': symbol,
+                    'ws_url': ws_url,
+                    'overlays': overlays,
+                    'market_data': market_data,
+                    'poc': (None if poc is None else float(poc)),
+                    'profile': profile_data,
+                    'footprint': footprint_data,
+                },
+                key=key,
+            )
         except Exception:
             pass
     return st.plotly_chart(figure, use_container_width=True, key=key)
-
-
-    for i in range(count):
-        try:
-            candles.append({
-                "time": _to_timestamp(x[i]),
-                "open": float(op[i]),
-                "high": float(hi[i]),
-                "low": float(lo[i]),
-                "close": float(cl[i]),
-            })
-        except (TypeError, ValueError, OverflowError):
-            continue
-
-    candles.sort(key=lambda item: item["time"])
-    unique = {}
-    for candle in candles:
-        unique[candle["time"]] = candle
-
-    overlays = {}
-    overlay_names = {"EMA", "SMA", "VWAP"}
-    figure_data = getattr(figure, "data", [])
-    for item in figure_data:
-        name = str(getattr(item, "name", "") or "")
-        if name not in overlay_names:
-            continue
-        values_raw = getattr(item, "y", None)
-        values = list([] if values_raw is None else values_raw)
-        series = []
-        limit = min(len(x), len(values))
-        for i in range(limit):
-            try:
-                value = float(values[i])
-                if pd.isna(value):
-                    continue
-                series.append({"time": _to_timestamp(x[i]), "value": value})
-            except (TypeError, ValueError, OverflowError):
-                continue
-        overlays[name] = series
-
-    return CHT_LIVE_COMPONENT(
-        data={"candles": list(unique.values()), "overlays": overlays},
-        key=key,
-    )
 
 
 

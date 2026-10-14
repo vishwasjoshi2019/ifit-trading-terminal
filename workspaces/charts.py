@@ -129,6 +129,7 @@ def _render_interactive_chart(ctx, spot: float):
         fig,
         height=int(getattr(fig.layout, "height", None) or 650),
         key="charts_live_view",
+        symbol="NIFTY",
     )
 
 
