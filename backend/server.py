@@ -133,3 +133,13 @@ async def websocket_market_endpoint(websocket: WebSocket):
         await feed_manager.unregister_client(websocket)
     except Exception:
         await feed_manager.unregister_client(websocket)
+
+
+# Mount compiled React frontend for single-port Bloomberg web terminal serving
+import os
+from fastapi.staticfiles import StaticFiles
+
+_frontend_dist = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+if os.path.exists(_frontend_dist):
+    app.mount("/", StaticFiles(directory=_frontend_dist, html=True), name="frontend")
+
