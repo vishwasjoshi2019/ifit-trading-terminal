@@ -16,7 +16,10 @@ class DhanLiveService:
 
     def __init__(self):
         self.adapter = DhanAdapter()
-        self.instrument = self._resolve_nifty()
+        try:
+            self.instrument = self._resolve_nifty()
+        except Exception:
+            self.instrument = None
         self.client = None
         # Separate NIFTY futures depth feed; do not mix with index ticks.
         self.futures_instrument = None
@@ -180,24 +183,36 @@ class DhanLiveService:
     def start_futures_feed(self):
         if (
             self.futures_client is not None
-            and self.futures_client.is_running
+            and getattr(self.futures_client, "is_running", False)
         ):
             return self
 
-        self.futures_instrument = self._resolve_nifty_future()
-        self.futures_client = self.adapter.subscribe_ticks(
-            [self.futures_instrument],
-            self._on_futures_tick,
-        )
+        try:
+            self.futures_instrument = self._resolve_nifty_future()
+            if self.futures_instrument:
+                self.futures_client = self.adapter.subscribe_ticks(
+                    [self.futures_instrument],
+                    self._on_futures_tick,
+                )
+        except Exception as exc:
+            self.futures_client = None
         return self
 
     def start(self):
-        if self.client is not None and self.client.is_running:
+        if self.client is not None and getattr(self.client, "is_running", False):
             return self
-        self.client = self.adapter.subscribe_ticks(
-            [self.instrument],
-            self._on_tick,
-        )
+        try:
+            if self.instrument is None:
+                self.instrument = self._resolve_nifty()
+            if self.instrument:
+                self.client = self.adapter.subscribe_ticks(
+                    [self.instrument],
+                    self._on_tick,
+                )
+        except Exception as exc:
+            self.client = None
+            with self._lock:
+                self._option_chain_error = f"Dhan WS connection failed: {exc}"
         return self
 
     def historical_candles(self, timeframe="Intraday", bars=180, force=False):
@@ -362,11 +377,13 @@ class DhanLiveService:
             tick = self._latest
             count = self._tick_count
         if tick is None:
+            sym = self.instrument.symbol if self.instrument else "NIFTY"
+            sec_id = self.instrument.token if self.instrument else ""
             return {
                 "status": "CONNECTING",
                 "provider": "DHAN",
-                "symbol": self.instrument.symbol,
-                "security_id": self.instrument.token,
+                "symbol": sym,
+                "security_id": sec_id,
                 "tick_count": count,
                 "spot": None,
                 "timestamp": None,
@@ -403,11 +420,13 @@ class DhanLiveService:
             )
 
         if tick is None:
+            sym = self.instrument.symbol if self.instrument else "NIFTY"
+            sec_id = self.instrument.token if self.instrument else ""
             return {
                 "status": "CONNECTING",
                 "provider": "DHAN",
-                "symbol": self.instrument.symbol,
-                "security_id": self.instrument.token,
+                "symbol": sym,
+                "security_id": sec_id,
                 "tick_count": count,
                 "spot": None,
                 "futures": 0.0,

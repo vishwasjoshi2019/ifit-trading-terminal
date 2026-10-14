@@ -172,25 +172,34 @@ class DhanWebSocketClient:
         if self._running:
             return self
 
-        self.ws = websocket.create_connection(
-            self._url(),
-            timeout=10,
-        )
+        if not self.client_id or not self.access_token:
+            print("[DHAN WS] Cannot connect: missing client_id or access_token")
+            return self
 
-        self.ws.send(
-            json.dumps(
-                self._subscription_payload()
+        try:
+            self.ws = websocket.create_connection(
+                self._url(),
+                timeout=10,
             )
-        )
 
-        self._running = True
+            self.ws.send(
+                json.dumps(
+                    self._subscription_payload()
+                )
+            )
 
-        self._thread = threading.Thread(
-            target=self._receive_loop,
-            name="IFIT-DHAN-WebSocket",
-            daemon=True,
-        )
-        self._thread.start()
+            self._running = True
+
+            self._thread = threading.Thread(
+                target=self._receive_loop,
+                name="IFIT-DHAN-WebSocket",
+                daemon=True,
+            )
+            self._thread.start()
+        except Exception as exc:
+            self._running = False
+            self.ws = None
+            print(f"[DHAN WS] Connection attempt failed: {exc}")
 
         return self
 
