@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-09-11T10:30:15+05:30",
+  "spot": 24782.35,
+  "futures": 24791.20,
+  "options": [
+    {
+      "symbol": "NIFTY",
+      "expiryDate": "2026-09-24",
+      "strikePrice": 24800,
+      "CE": {
+        "lastPrice": 125.50,
+        "openInterest": 123456,
+        "impliedVolatility": 14.50
+      },
+      "PE": {
+        "lastPrice": 138.20,
+        "openInterest": 98765,
+        "impliedVolatility": 15.10
+      }
+    }
+  ]
+}
