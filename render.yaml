@@ -2,7 +2,7 @@ services:
   - type: web
     name: ifit-trading-terminal
     env: docker
-    plan: standard
+    plan: free
     healthCheckPath: /_stcore/health
     autoDeploy: true
     envVars:
