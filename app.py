@@ -4,10 +4,14 @@ High-density, professional Bloomberg/TradingView-grade terminal architecture.
 from __future__ import annotations
 
 import os
+import warnings
 from datetime import datetime, timezone
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
+
+warnings.filterwarnings("ignore", message=".*use_container_width.*")
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 load_dotenv()
 

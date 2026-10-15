@@ -95,7 +95,13 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
         {/* Quant Lab Link */}
         <div className="flex items-center gap-3">
           <a
-            href="http://localhost:8501"
+            href={
+              typeof window !== 'undefined' && localStorage.getItem('ifit_quant_url')
+                ? localStorage.getItem('ifit_quant_url')!
+                : (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+                    ? 'http://localhost:8501'
+                    : 'https://share.streamlit.io/vishwasjoshi2019/ifit-trading-terminal/main/app.py')
+            }
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 text-[11px] font-mono text-blue-400 hover:text-blue-300 bg-blue-950/30 border border-blue-800/40 px-2.5 py-0.5 rounded transition-colors"

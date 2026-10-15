@@ -42,7 +42,8 @@ def build_bond_screener() -> pd.DataFrame:
     tb["Screener Score"] = tb["T-Bill Intelligence Score"]
     frames.append(_normalize(tb, "T-Bill"))
 
-    out = pd.concat(frames, ignore_index=True, sort=False)
+    clean_frames = [f.dropna(how="all", axis=1) for f in frames if not f.empty]
+    out = pd.concat(clean_frames, ignore_index=True, sort=False)
 
     for col in [
         "Instrument", "Asset Type", "Rating", "Issuer / State",

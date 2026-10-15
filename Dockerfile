@@ -16,8 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir "fastapi==0.110.0" "uvicorn[standard]" "websockets>=12.0" "pydantic>=2.0"
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source code
 COPY . .
