@@ -3,6 +3,7 @@ services:
     name: ifit-trading-terminal
     env: docker
     plan: standard
+    healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: MARKET_FEED_PROVIDER

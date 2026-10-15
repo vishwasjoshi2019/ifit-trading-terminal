@@ -22,9 +22,10 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Copy application source code
 COPY . .
 
-# Expose Streamlit and FastAPI WebSocket ports
-EXPOSE 8501 8000
+# Expose default HTTP/WebSocket port
+EXPOSE 8000 8501 10000
 
-# Start both FastAPI backend daemon and Streamlit frontend
-CMD uvicorn backend.server:app --host 0.0.0.0 --port 8000 & \
-    streamlit run app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+RUN chmod +x scripts/start.sh
+
+# Run unified entrypoint supporting dynamic $PORT from Render, Railway, or Fly
+CMD ["/bin/bash", "scripts/start.sh"]

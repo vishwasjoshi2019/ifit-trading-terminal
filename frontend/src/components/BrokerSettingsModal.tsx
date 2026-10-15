@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { fetchHealth, switchProvider } from '../services/api';
+import { fetchHealth, switchProvider, getBackendBaseUrl, setBackendBaseUrl } from '../services/api';
 import type { SystemHealth } from '../types';
-import { X, CheckCircle, AlertTriangle, Radio } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, Radio, Globe } from 'lucide-react';
 
 interface BrokerSettingsModalProps {
   isOpen: boolean;
@@ -17,14 +17,24 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [backendUrl, setBackendUrlState] = useState<string>(getBackendBaseUrl());
+  const [urlSaved, setUrlSaved] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) {
+      setBackendUrlState(getBackendBaseUrl());
       fetchHealth().then(setHealth).catch(() => {});
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleSaveUrl = () => {
+    setBackendBaseUrl(backendUrl);
+    setUrlSaved(true);
+    setTimeout(() => setUrlSaved(false), 2000);
+    fetchHealth().then(setHealth).catch(() => {});
+  };
 
   const handleSwitch = async (provider: string) => {
     setLoading(true);
@@ -83,6 +93,40 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
               <span>{error}</span>
             </div>
           )}
+
+          {/* Backend Streaming Server URL */}
+          <div className="space-y-1.5 p-3 bg-terminal-bg rounded border border-terminal-border">
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-gray-300 font-semibold flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-blue-400" />
+                Backend Streaming Endpoint (Render / Local)
+              </label>
+              {urlSaved && (
+                <span className="text-[10px] text-terminal-green font-semibold flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> Saved
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={backendUrl}
+                onChange={(e) => setBackendUrlState(e.target.value)}
+                placeholder="e.g. https://your-terminal.onrender.com or http://localhost:8000"
+                className="flex-1 bg-terminal-panel border border-terminal-border px-2.5 py-1.5 text-xs rounded text-gray-200 focus:outline-none focus:border-blue-500 font-mono"
+              />
+              <button
+                type="button"
+                onClick={handleSaveUrl}
+                className="px-3 py-1 bg-blue-600/80 hover:bg-blue-600 text-white text-xs rounded font-semibold transition-colors"
+              >
+                Connect
+              </button>
+            </div>
+            <div className="text-[10px] text-gray-500">
+              Leave blank to use default <span className="text-gray-400">http://localhost:8000</span> or enter your Render URL.
+            </div>
+          </div>
 
           <div className="space-y-2.5">
             <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider">

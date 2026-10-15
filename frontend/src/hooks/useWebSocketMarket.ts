@@ -10,6 +10,26 @@ export interface TradePrint {
   isBuyer: boolean;
 }
 
+function getWebSocketUrl(): string {
+  if (typeof window !== 'undefined') {
+    const custom = localStorage.getItem('ifit_backend_url');
+    if (custom) {
+      const clean = custom.replace(/^http/, 'ws').replace(/\/$/, '');
+      return `${clean}/ws/market`;
+    }
+    if (import.meta.env.VITE_BACKEND_URL) {
+      const clean = import.meta.env.VITE_BACKEND_URL.replace(/^http/, 'ws').replace(/\/$/, '');
+      return `${clean}/ws/market`;
+    }
+    // Remote single-port deployment (Render / container)
+    if (window.location.hostname !== 'localhost' && !window.location.hostname.endsWith('vercel.app')) {
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${proto}//${window.location.host}/ws/market`;
+    }
+  }
+  return 'ws://localhost:8000/ws/market';
+}
+
 export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
   const [ticks, setTicks] = useState<Record<string, NormalizedTick>>({});
   const [tape, setTape] = useState<TradePrint[]>([]);
@@ -18,14 +38,17 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
   const [activeProvider, setActiveProvider] = useState<string>('SIMULATION');
   const wsRef = useRef<WebSocket | null>(null);
   const pingStartRef = useRef<number>(0);
+  const isConnectedRef = useRef<boolean>(false);
 
   const connect = useCallback(() => {
     try {
-      const ws = new WebSocket('ws://localhost:8000/ws/market');
+      const url = getWebSocketUrl();
+      const ws = new WebSocket(url);
       wsRef.current = ws;
 
       ws.onopen = () => {
         setStatus('CONNECTED');
+        isConnectedRef.current = true;
       };
 
       ws.onmessage = (event) => {
@@ -63,31 +86,33 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
               setTape((prev) => [print, ...prev.slice(0, 49)]);
             }
           }
-        } catch (e) {
+        } catch {
           // ignore parse error
         }
       };
 
       ws.onclose = () => {
         setStatus('DISCONNECTED');
+        isConnectedRef.current = false;
         wsRef.current = null;
-        // Exponential backoff reconnect
-        setTimeout(connect, 2000);
+        setTimeout(connect, 3000);
       };
 
       ws.onerror = () => {
         setStatus('DISCONNECTED');
+        isConnectedRef.current = false;
       };
-    } catch (err) {
+    } catch {
       setStatus('DISCONNECTED');
-      setTimeout(connect, 3000);
+      isConnectedRef.current = false;
+      setTimeout(connect, 4000);
     }
   }, [activeSymbol]);
 
   useEffect(() => {
     connect();
 
-    // Ping interval to monitor socket latency
+    // Ping interval to monitor socket latency when connected
     const pingInterval = setInterval(() => {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         pingStartRef.current = performance.now();
@@ -95,13 +120,69 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
       }
     }, 4000);
 
+    // Client-side simulation fallback when disconnected (e.g. standalone Vercel preview)
+    const fallbackTicker = setInterval(() => {
+      if (!isConnectedRef.current) {
+        const symbols = ['NIFTY', 'BANKNIFTY', 'FINNIFTY'];
+        symbols.forEach((sym) => {
+          const base = sym === 'BANKNIFTY' ? 48500 : sym === 'FINNIFTY' ? 21800 : 22500;
+          setTicks((prev) => {
+            const last = prev[sym]?.ltp || base;
+            const delta = (Math.random() - 0.495) * (base * 0.0003);
+            const ltp = +(last + delta).toFixed(2);
+            const spread = +(base * 0.0001).toFixed(2);
+            const isUp = delta >= 0;
+
+            if (sym === activeSymbol && Math.random() > 0.4) {
+              const print: TradePrint = {
+                id: `${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                symbol: sym,
+                price: ltp,
+                qty: Math.floor(25 + Math.random() * 100) * (sym === 'BANKNIFTY' ? 15 : 25),
+                time: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                isBuyer: isUp,
+              };
+              setTape((tapePrev) => [print, ...tapePrev.slice(0, 49)]);
+            }
+
+            return {
+              ...prev,
+              [sym]: {
+                symbol: sym,
+                exchange: 'NSE',
+                segment: 'INDEX',
+                timestamp: new Date().toISOString(),
+                ltp,
+                open: +(base * 0.998).toFixed(2),
+                high: Math.max(ltp, +(base * 1.004).toFixed(2)),
+                low: Math.min(ltp, +(base * 0.995).toFixed(2)),
+                close: base,
+                volume: Math.floor(1500000 + Math.random() * 50000),
+                net_change: +(ltp - base).toFixed(2),
+                percentage_change: +(((ltp - base) / base) * 100).toFixed(2),
+                bid: +(ltp - spread / 2).toFixed(2),
+                ask: +(ltp + spread / 2).toFixed(2),
+                bid_qty: Math.floor(500 + Math.random() * 2000),
+                ask_qty: Math.floor(500 + Math.random() * 2000),
+                oi: Math.floor(12000000 + Math.random() * 20000),
+                oi_change: Math.floor(150000 + Math.random() * 5000),
+                source: 'SIMULATION (Client Fallback)',
+                is_live: false,
+              },
+            };
+          });
+        });
+      }
+    }, 400);
+
     return () => {
       clearInterval(pingInterval);
+      clearInterval(fallbackTicker);
       if (wsRef.current) {
         wsRef.current.close();
       }
     };
-  }, [connect]);
+  }, [connect, activeSymbol]);
 
   return {
     ticks,
@@ -109,6 +190,6 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
     tape,
     status,
     latencyMs,
-    activeProvider,
+    activeProvider: isConnectedRef.current ? activeProvider : 'SIMULATION (Standalone Preview)',
   };
 }
