@@ -3,9 +3,11 @@ services:
     name: ifit-trading-terminal
     env: docker
     plan: standard
-    healthCheckPath: /api/health
+    healthCheckPath: /_stcore/health
     autoDeploy: true
     envVars:
+      - key: TERMINAL_MODE
+        value: QUANT
       - key: MARKET_FEED_PROVIDER
         value: SIMULATION
       - key: DHAN_CLIENT_ID
