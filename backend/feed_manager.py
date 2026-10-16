@@ -104,9 +104,11 @@ class FeedManager:
         if not self._connected_clients:
             return
 
+        depth = self.get_depth(tick.symbol)
         payload = {
             "type": "tick",
             "data": tick.model_dump(),
+            "depth": depth.model_dump() if depth else None,
         }
         text = json.dumps(payload)
         dead = set()

@@ -85,6 +85,42 @@ class TestBackendStreaming(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(switched_back)
         self.assertEqual(feed_manager.active_provider_name, "SIMULATION")
 
+    async def test_quant_endpoints(self):
+        from backend.server import (
+            get_yield_curve,
+            get_equity_screener,
+            get_cross_asset,
+            run_monte_carlo_simulation,
+            get_options_greeks,
+            MonteCarloRequest,
+        )
+
+        # Test Yield curve
+        yc = await get_yield_curve()
+        self.assertIsInstance(yc, list)
+        self.assertGreater(len(yc), 5)
+
+        # Test Screener
+        scr = await get_equity_screener()
+        self.assertIsInstance(scr, list)
+        self.assertGreater(len(scr), 10)
+
+        # Test Cross Asset
+        ca = await get_cross_asset()
+        self.assertIn("correlation", ca)
+        self.assertIn("asset_table", ca)
+
+        # Test Monte Carlo
+        mc = await run_monte_carlo_simulation(MonteCarloRequest(spot=24800, days=10, paths=100))
+        self.assertIn("var_95", mc)
+        self.assertIn("p50", mc)
+
+        # Test Options Greeks
+        greeks = await get_options_greeks(spot=24800)
+        self.assertIsInstance(greeks, list)
+        self.assertGreater(len(greeks), 5)
+
+
     async def test_tick_listener_dispatch(self):
         received_ticks = []
 

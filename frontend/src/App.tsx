@@ -4,30 +4,53 @@ import { TradingViewChart } from './components/TradingViewChart';
 import { OrderBookDepthPanel } from './components/OrderBookDepthPanel';
 import { TimeAndSalesTape } from './components/TimeAndSalesTape';
 import { OptionChainMatrix } from './components/OptionChainMatrix';
+import { OrderTicketPanel } from './components/OrderTicketPanel';
+import { OptionsLabWorkspace } from './components/OptionsLabWorkspace';
+import { RiskQuantWorkspace } from './components/RiskQuantWorkspace';
+import { FixedIncomeWorkspace } from './components/FixedIncomeWorkspace';
+import { ScreenerWorkspace } from './components/ScreenerWorkspace';
+import { CrossAssetWorkspace } from './components/CrossAssetWorkspace';
 import { BrokerSettingsModal } from './components/BrokerSettingsModal';
 import { useWebSocketMarket } from './hooks/useWebSocketMarket';
 import { fetchSnapshot } from './services/api';
-import type { OrderBookDepth } from './types';
-import { Radio, BarChart2, Clock, Activity, Cpu } from 'lucide-react';
+import type { OrderBookDepth, WorkspaceTab } from './types';
+import { Clock } from 'lucide-react';
 
 export const App: React.FC = () => {
+  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceTab>('COCKPIT');
   const [activeSymbol, setActiveSymbol] = useState<string>('NIFTY');
   const [timeframe, setTimeframe] = useState<string>('1m');
   const [depth, setDepth] = useState<OrderBookDepth | null>(null);
-  const [rightTab, setRightTab] = useState<'TAPE' | 'OPTIONS'>('TAPE');
+  const [cockpitRightTab, setCockpitRightTab] = useState<'TICKET' | 'TAPE' | 'OPTIONS'>('TICKET');
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [clock, setClock] = useState<string>('');
 
-  const { ticks, currentTick, tape, status, latencyMs, activeProvider } = useWebSocketMarket(activeSymbol);
+  const {
+    ticks,
+    currentTick,
+    currentDepth,
+    tape,
+    orders,
+    sendOrder,
+    status,
+    latencyMs,
+    activeProvider,
+  } = useWebSocketMarket(activeSymbol);
 
-  // Periodic depth polling
+  // Sync WebSocket depth into local state, fallback to periodic polling if WS depth is empty
+  useEffect(() => {
+    if (currentDepth) {
+      setDepth(currentDepth);
+    }
+  }, [currentDepth]);
+
   useEffect(() => {
     let active = true;
 
     const loadDepth = () => {
       fetchSnapshot(activeSymbol)
         .then((snap) => {
-          if (active && snap.depth) {
+          if (active && snap.depth && !currentDepth) {
             setDepth(snap.depth);
           }
         })
@@ -35,15 +58,15 @@ export const App: React.FC = () => {
     };
 
     loadDepth();
-    const interval = setInterval(loadDepth, 1500);
+    const interval = setInterval(loadDepth, 2000);
 
     return () => {
       active = false;
       clearInterval(interval);
     };
-  }, [activeSymbol]);
+  }, [activeSymbol, currentDepth]);
 
-  // Clock
+  // Real-time IST Clock
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
@@ -56,7 +79,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-terminal-bg text-terminal-text overflow-hidden font-sans select-none">
-      {/* 1. Institutional Command Bar */}
+      {/* 1. Institutional Command & Workspace Bar */}
       <CommandHeader
         activeSymbol={activeSymbol}
         onSelectSymbol={setActiveSymbol}
@@ -67,84 +90,132 @@ export const App: React.FC = () => {
         latencyMs={latencyMs}
         activeProvider={activeProvider}
         onOpenSettings={() => setSettingsOpen(true)}
+        activeWorkspace={activeWorkspace}
+        onSelectWorkspace={setActiveWorkspace}
       />
 
-      {/* 2. Main Terminal Grid */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Left: TradingView Chart Pane */}
-        <div className="flex-1 h-full min-h-[400px]">
-          <TradingViewChart
-            symbol={activeSymbol}
-            timeframe={timeframe}
-            currentTick={currentTick}
+      {/* 2. Workspace View Routing */}
+      <main className="flex-1 flex overflow-hidden">
+        {activeWorkspace === 'COCKPIT' && (
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* Left: Interactive TradingView Chart */}
+            <div className="flex-1 h-full min-h-[400px]">
+              <TradingViewChart
+                symbol={activeSymbol}
+                timeframe={timeframe}
+                currentTick={currentTick}
+              />
+            </div>
+
+            {/* Right: Institutional Order Book & Microstructure Panels */}
+            <div className="w-full md:w-[380px] lg:w-[440px] flex flex-col h-full bg-terminal-panel border-l border-terminal-border">
+              {/* Top Half: Level-2 Order Book Depth */}
+              <div className="h-[42%] flex flex-col border-b border-terminal-border">
+                <OrderBookDepthPanel depth={depth} symbol={activeSymbol} />
+              </div>
+
+              {/* Bottom Half: Switchable Cockpit Tabs (Order Ticket / Tape / Option Chain) */}
+              <div className="h-[58%] flex flex-col">
+                {/* Cockpit Tab Switcher */}
+                <div className="flex items-center bg-terminal-header border-b border-terminal-border text-[11px] font-mono">
+                  <button
+                    onClick={() => setCockpitRightTab('TICKET')}
+                    className={`flex-1 py-1.5 text-center font-bold transition-colors ${
+                      cockpitRightTab === 'TICKET'
+                        ? 'bg-terminal-panel text-cyan-400 border-b-2 border-cyan-500'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    ORDER TICKET
+                  </button>
+                  <button
+                    onClick={() => setCockpitRightTab('TAPE')}
+                    className={`flex-1 py-1.5 text-center font-bold transition-colors ${
+                      cockpitRightTab === 'TAPE'
+                        ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    TAPE
+                  </button>
+                  <button
+                    onClick={() => setCockpitRightTab('OPTIONS')}
+                    className={`flex-1 py-1.5 text-center font-bold transition-colors ${
+                      cockpitRightTab === 'OPTIONS'
+                        ? 'bg-terminal-panel text-amber-400 border-b-2 border-amber-500'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    OPTIONS
+                  </button>
+                </div>
+
+                {/* Cockpit Tab Body */}
+                <div className="flex-1 overflow-hidden">
+                  {cockpitRightTab === 'TICKET' ? (
+                    <OrderTicketPanel
+                      symbol={activeSymbol}
+                      currentTick={currentTick}
+                      onSendOrder={sendOrder}
+                      orders={orders}
+                    />
+                  ) : cockpitRightTab === 'TAPE' ? (
+                    <TimeAndSalesTape tape={tape} symbol={activeSymbol} />
+                  ) : (
+                    <OptionChainMatrix symbol={activeSymbol} />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeWorkspace === 'OPTIONS' && (
+          <OptionsLabWorkspace symbol={activeSymbol} currentTick={currentTick} />
+        )}
+
+        {activeWorkspace === 'RISK' && (
+          <RiskQuantWorkspace currentSpot={currentTick?.ltp || 24800} symbol={activeSymbol} />
+        )}
+
+        {activeWorkspace === 'BONDS' && <FixedIncomeWorkspace />}
+
+        {activeWorkspace === 'SCREENER' && (
+          <ScreenerWorkspace
+            onSelectSymbol={(sym) => {
+              setActiveSymbol(sym);
+              setActiveWorkspace('COCKPIT');
+            }}
           />
-        </div>
+        )}
 
-        {/* Right: Institutional Order Book & Microstructure Panels */}
-        <div className="w-full md:w-[380px] lg:w-[420px] flex flex-col h-full bg-terminal-panel border-l border-terminal-border">
-          {/* Top Half: Order Book Depth */}
-          <div className="h-1/2 flex flex-col">
-            <OrderBookDepthPanel depth={depth} symbol={activeSymbol} />
-          </div>
+        {activeWorkspace === 'CROSS_ASSET' && <CrossAssetWorkspace />}
+      </main>
 
-          {/* Bottom Half: Tabs for Time & Sales vs Option Chain */}
-          <div className="h-1/2 flex flex-col">
-            {/* Tab Header */}
-            <div className="flex items-center bg-terminal-header border-b border-terminal-border text-xs font-mono">
-              <button
-                onClick={() => setRightTab('TAPE')}
-                className={`flex-1 py-1.5 text-center font-bold transition-colors ${
-                  rightTab === 'TAPE'
-                    ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500'
-                    : 'text-gray-500 hover:text-gray-300'
-                }`}
-              >
-                TIME & SALES (TAPE)
-              </button>
-              <button
-                onClick={() => setRightTab('OPTIONS')}
-                className={`flex-1 py-1.5 text-center font-bold transition-colors ${
-                  rightTab === 'OPTIONS'
-                    ? 'bg-terminal-panel text-amber-400 border-b-2 border-amber-500'
-                    : 'text-gray-500 hover:text-gray-300'
-                }`}
-              >
-                OPTION CHAIN MATRIX
-              </button>
-            </div>
-
-            {/* Tab Body */}
-            <div className="flex-1 overflow-hidden">
-              {rightTab === 'TAPE' ? (
-                <TimeAndSalesTape tape={tape} symbol={activeSymbol} />
-              ) : (
-                <OptionChainMatrix symbol={activeSymbol} />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Terminal Footer Status Bar */}
+      {/* 3. Terminal Institutional Status Bar */}
       <footer className="flex items-center justify-between px-3 py-1 bg-terminal-header border-t border-terminal-border text-[11px] font-mono text-gray-400 select-none">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <span
               className={`w-2 h-2 rounded-full ${
-                status === 'CONNECTED' ? 'bg-terminal-green shadow-[0_0_6px_#22c55e]' : 'bg-terminal-red'
+                status === 'CONNECTED' ? 'bg-terminal-green shadow-[0_0_6px_#22c55e]' : 'bg-amber-400'
               }`}
             />
             <span className="font-semibold text-gray-200">
-              FASTAPI STREAM: {status === 'CONNECTED' ? 'ONLINE' : 'OFFLINE'}
+              FASTAPI STREAM: {status === 'CONNECTED' ? 'ONLINE' : 'PREVIEW'}
             </span>
           </div>
           <span className="text-gray-600">|</span>
           <div>
-            ENGINE: <span className="text-gray-200">ASYNCIO EVENT LOOP (:8000)</span>
+            WS ENGINE: <span className="text-gray-200">ASYNCIO EVENT LOOP (:8000)</span>
           </div>
           <span className="text-gray-600">|</span>
           <div>
-            PROVIDER: <span className="text-amber-400 font-bold">{activeProvider}</span>
+            FEED: <span className="text-amber-400 font-bold">{activeProvider}</span>
+          </div>
+          <span className="text-gray-600">|</span>
+          <div>
+            WORKSPACE: <span className="text-blue-400 font-bold">[{activeWorkspace}]</span>
           </div>
         </div>
 
@@ -154,18 +225,13 @@ export const App: React.FC = () => {
             <span>{clock}</span>
           </div>
           <span className="text-gray-600">|</span>
-          <span className="text-gray-500">IFIT v1.0 PRO TERMINAL</span>
+          <span className="text-gray-500 font-mono">IFIT PRO v2.0 BLOOMBERG EDITION</span>
         </div>
       </footer>
 
-      {/* 4. Broker Switching Modal */}
-      <BrokerSettingsModal
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        activeProvider={activeProvider}
-      />
+      {/* 4. Settings Modal */}
+      <BrokerSettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 };
-
 export default App;

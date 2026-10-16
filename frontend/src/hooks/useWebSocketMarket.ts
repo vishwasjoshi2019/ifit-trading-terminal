@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { NormalizedTick } from '../types';
+import type { NormalizedTick, OrderBookDepth, PaperOrder } from '../types';
 
 export interface TradePrint {
   id: string;
@@ -32,7 +32,9 @@ function getWebSocketUrl(): string {
 
 export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
   const [ticks, setTicks] = useState<Record<string, NormalizedTick>>({});
+  const [depths, setDepths] = useState<Record<string, OrderBookDepth>>({});
   const [tape, setTape] = useState<TradePrint[]>([]);
+  const [orders, setOrders] = useState<PaperOrder[]>([]);
   const [status, setStatus] = useState<'CONNECTING' | 'CONNECTED' | 'DISCONNECTED'>('CONNECTING');
   const [latencyMs, setLatencyMs] = useState<number>(4);
   const [activeProvider, setActiveProvider] = useState<string>('SIMULATION');
@@ -68,6 +70,10 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
             const tick: NormalizedTick = msg.data;
             setTicks((prev) => ({ ...prev, [tick.symbol]: tick }));
 
+            if (msg.depth) {
+              setDepths((prev) => ({ ...prev, [tick.symbol]: msg.depth }));
+            }
+
             // Add trade to tape if matching active symbol
             if (tick.symbol === activeSymbol) {
               const tradePrice = tick.trade_price ?? tick.ltp;
@@ -85,6 +91,18 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
 
               setTape((prev) => [print, ...prev.slice(0, 49)]);
             }
+          } else if (msg.type === 'order_confirmed') {
+            const newOrder: PaperOrder = {
+              id: msg.order_id,
+              symbol: msg.symbol,
+              side: msg.side,
+              qty: msg.qty,
+              price: msg.price,
+              orderType: msg.order_type || 'MARKET',
+              status: 'FILLED',
+              time: new Date().toLocaleTimeString([], { hour12: false }),
+            };
+            setOrders((prev) => [newOrder, ...prev.slice(0, 49)]);
           }
         } catch {
           // ignore parse error
@@ -108,6 +126,27 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
       setTimeout(connect, 4000);
     }
   }, [activeSymbol]);
+
+  const sendOrder = useCallback(
+    (order: { symbol: string; side: 'BUY' | 'SELL'; qty: number; price: number; orderType: 'MARKET' | 'LIMIT' | 'SL' }) => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'order', ...order }));
+      } else {
+        const newOrder: PaperOrder = {
+          id: `ORD-SIM-${Date.now()}`,
+          symbol: order.symbol,
+          side: order.side,
+          qty: order.qty,
+          price: order.price,
+          orderType: order.orderType,
+          status: 'FILLED',
+          time: new Date().toLocaleTimeString([], { hour12: false }),
+        };
+        setOrders((prev) => [newOrder, ...prev.slice(0, 49)]);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     connect();
@@ -144,6 +183,33 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
               };
               setTape((tapePrev) => [print, ...tapePrev.slice(0, 49)]);
             }
+
+            // Generate synthetic 5-level depth
+            const levels = [];
+            for (let lvl = 1; lvl <= 5; lvl++) {
+              levels.push({
+                level: lvl,
+                bid: +(ltp - spread / 2 - (lvl - 1) * (base * 0.00015)).toFixed(2),
+                bid_qty: Math.floor(100 + Math.random() * 400) * (sym === 'BANKNIFTY' ? 15 : 25),
+                ask: +(ltp + spread / 2 + (lvl - 1) * (base * 0.00015)).toFixed(2),
+                ask_qty: Math.floor(100 + Math.random() * 400) * (sym === 'BANKNIFTY' ? 15 : 25),
+              });
+            }
+            const buyQty = levels.reduce((s, l) => s + l.bid_qty, 0);
+            const sellQty = levels.reduce((s, l) => s + l.ask_qty, 0);
+
+            setDepths((prevDepths) => ({
+              ...prevDepths,
+              [sym]: {
+                symbol: sym,
+                timestamp: new Date().toISOString(),
+                levels,
+                total_buy_qty: buyQty,
+                total_sell_qty: sellQty,
+                spread,
+                source: 'SIMULATION (Client Fallback)',
+              },
+            }));
 
             return {
               ...prev,
@@ -187,7 +253,11 @@ export function useWebSocketMarket(activeSymbol: string = 'NIFTY') {
   return {
     ticks,
     currentTick: ticks[activeSymbol] || null,
+    depths,
+    currentDepth: depths[activeSymbol] || null,
     tape,
+    orders,
+    sendOrder,
     status,
     latencyMs,
     activeProvider: isConnectedRef.current ? activeProvider : 'SIMULATION (Standalone Preview)',
