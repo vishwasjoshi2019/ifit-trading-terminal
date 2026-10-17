@@ -112,18 +112,22 @@ export const ScreenerWorkspace: React.FC<ScreenerWorkspaceProps> = ({ onSelectSy
         <div className="flex items-center gap-2">
           <input
             type="text"
-            placeholder="Search symbol (e.g. RELIANCE)..."
+            placeholder="Search symbol (e.g. RELIANCE)…"
+            aria-label="Search equities by symbol"
+            autoComplete="off"
+            spellCheck={false}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-[#141A26] border border-[#1E2638] rounded px-2.5 py-1 text-slate-100 placeholder-slate-500 text-xs w-48 focus:outline-none focus:border-cyan-500 font-mono"
+            className="bg-[#141A26] border border-[#1E2638] rounded px-2.5 py-1 text-slate-100 placeholder-slate-400 text-xs w-48 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500 font-mono"
           />
 
           <div className="flex items-center gap-1">
             <span className="text-slate-400 text-[11px]">Sector:</span>
             <select
               value={sectorFilter}
+              aria-label="Filter equities by sector"
               onChange={(e) => setSectorFilter(e.target.value)}
-              className="bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-cyan-500 font-mono"
+              className="bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-200 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500 font-mono"
             >
               {sectors.map((s) => (
                 <option key={s} value={s}>
@@ -135,7 +139,7 @@ export const ScreenerWorkspace: React.FC<ScreenerWorkspaceProps> = ({ onSelectSy
         </div>
 
         {/* Strategy Presets */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" role="group" aria-label="Strategy screener presets">
           <span className="text-slate-400 text-[11px] mr-1">Presets:</span>
           {[
             { id: 'ALL', label: 'All Equities' },
@@ -146,8 +150,9 @@ export const ScreenerWorkspace: React.FC<ScreenerWorkspaceProps> = ({ onSelectSy
           ].map((p) => (
             <button
               key={p.id}
+              type="button"
               onClick={() => setPreset(p.id)}
-              className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors ${
+              className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 ${
                 preset === p.id
                   ? 'bg-cyan-600 text-white font-bold'
                   : 'bg-[#141A26] text-slate-300 hover:bg-[#1E2638] border border-[#1E2638]'
@@ -172,52 +177,60 @@ export const ScreenerWorkspace: React.FC<ScreenerWorkspaceProps> = ({ onSelectSy
 
         <div className="overflow-x-auto flex-1">
           {loading ? (
-            <div className="text-center py-12 text-slate-500 font-mono text-xs">Loading institutional screener data...</div>
+            <div className="text-center py-12 text-slate-400 font-mono text-xs">Loading institutional screener data…</div>
           ) : (
-            <table className="w-full text-[11px] font-mono text-left">
+            <table className="w-full text-[11px] font-mono text-left tabular-nums">
               <thead>
                 <tr className="border-b border-[#1E2638] text-slate-400 text-[10px] uppercase select-none">
-                  <th className="py-2 px-2 cursor-pointer hover:text-cyan-400" onClick={() => handleSort('Symbol')}>
-                    Symbol {sortField === 'Symbol' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 cursor-pointer hover:text-cyan-400" onClick={() => handleSort('Sector')}>
-                    Sector {sortField === 'Sector' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('Price')}>
-                    Price (₹) {sortField === 'Price' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('P/E')}>
-                    P/E {sortField === 'P/E' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('ROE %')}>
-                    ROE % {sortField === 'ROE %' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('ROCE %')}>
-                    ROCE % {sortField === 'ROCE %' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('Debt/Equity')}>
-                    D/E {sortField === 'Debt/Equity' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('Revenue Growth %')}>
-                    Rev Grw % {sortField === 'Revenue Growth %' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('RSI 14')}>
-                    RSI 14 {sortField === 'RSI 14' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-center cursor-pointer hover:text-cyan-400" onClick={() => handleSort('EMA Trend')}>
-                    EMA Trend {sortField === 'EMA Trend' && (sortAsc ? '▲' : '▼')}
-                  </th>
-                  <th className="py-2 px-2 text-right cursor-pointer hover:text-cyan-400" onClick={() => handleSort('Equity Score')}>
-                    Composite Score {sortField === 'Equity Score' && (sortAsc ? '▲' : '▼')}
-                  </th>
+                  {(
+                    [
+                      ['Symbol', 'Symbol', 'text-left'],
+                      ['Sector', 'Sector', 'text-left'],
+                      ['Price', 'Price (₹)', 'text-right'],
+                      ['P/E', 'P/E', 'text-right'],
+                      ['ROE %', 'ROE %', 'text-right'],
+                      ['ROCE %', 'ROCE %', 'text-right'],
+                      ['Debt/Equity', 'D/E', 'text-right'],
+                      ['Revenue Growth %', 'Rev Grw %', 'text-right'],
+                      ['RSI 14', 'RSI 14', 'text-right'],
+                      ['EMA Trend', 'EMA Trend', 'text-center'],
+                      ['Equity Score', 'Composite Score', 'text-right'],
+                    ] as const
+                  ).map(([field, label, align]) => (
+                    <th
+                      key={field}
+                      role="columnheader"
+                      tabIndex={0}
+                      aria-sort={sortField === field ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+                      onClick={() => handleSort(field as keyof StockFactor)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleSort(field as keyof StockFactor);
+                        }
+                      }}
+                      className={`py-2 px-2 cursor-pointer hover:text-cyan-400 focus-visible:outline-none focus-visible:text-cyan-400 ${align}`}
+                    >
+                      {label} {sortField === field && (sortAsc ? '▲' : '▼')}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map((row) => (
                   <tr
                     key={row.Symbol}
+                    role="row"
+                    tabIndex={0}
+                    aria-label={`Select ${row.Symbol} equity`}
                     onClick={() => onSelectSymbol && onSelectSymbol(row.Symbol)}
-                    className="border-b border-[#141A26] hover:bg-[#141A26] cursor-pointer transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onSelectSymbol && onSelectSymbol(row.Symbol);
+                      }
+                    }}
+                    className="border-b border-[#141A26] hover:bg-[#141A26] cursor-pointer transition-colors focus-visible:outline-none focus-visible:bg-[#141A26]"
                   >
                     <td className="py-1.5 px-2 font-bold text-cyan-400">{row.Symbol}</td>
                     <td className="py-1.5 px-2 text-slate-400">{row.Sector}</td>

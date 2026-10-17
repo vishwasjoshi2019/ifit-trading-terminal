@@ -60,40 +60,40 @@ export const FixedIncomeWorkspace: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5">
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">Policy Repo Rate</span>
-          <div className="text-lg font-mono font-bold text-cyan-400 mt-1">6.50%</div>
-          <span className="text-[9px] text-slate-500 font-mono">RBI MPC Neutral Stance</span>
+          <div className="text-lg font-mono font-bold text-cyan-400 mt-1 tabular-nums">6.50%</div>
+          <span className="text-[9px] text-slate-400 font-mono">RBI MPC Neutral Stance</span>
         </div>
 
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">SDF Rate</span>
-          <div className="text-lg font-mono font-bold text-slate-200 mt-1">6.25%</div>
-          <span className="text-[9px] text-slate-500 font-mono">Floor of LAF Corridor</span>
+          <div className="text-lg font-mono font-bold text-slate-200 mt-1 tabular-nums">6.25%</div>
+          <span className="text-[9px] text-slate-400 font-mono">Floor of LAF Corridor</span>
         </div>
 
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">MSF / Bank Rate</span>
-          <div className="text-lg font-mono font-bold text-slate-200 mt-1">6.75%</div>
-          <span className="text-[9px] text-slate-500 font-mono">Ceiling of LAF Corridor</span>
+          <div className="text-lg font-mono font-bold text-slate-200 mt-1 tabular-nums">6.75%</div>
+          <span className="text-[9px] text-slate-400 font-mono">Ceiling of LAF Corridor</span>
         </div>
 
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">10Y Benchmark (7.18 GS 2033)</span>
-          <div className="text-lg font-mono font-bold text-emerald-400 mt-1">
+          <div className="text-lg font-mono font-bold text-emerald-400 mt-1 tabular-nums">
             {point10Y ? `${point10Y['YTM %'].toFixed(2)}%` : '7.22%'}
           </div>
-          <span className="text-[9px] text-emerald-500 font-mono">+0.4 bp Daily Shift</span>
+          <span className="text-[9px] text-emerald-400 font-mono">+0.4 bp Daily Shift</span>
         </div>
 
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">10Y - 2Y Term Spread</span>
-          <div className="text-lg font-mono font-bold text-cyan-400 mt-1">+{spread10_2} bp</div>
-          <span className="text-[9px] text-slate-500 font-mono">Healthy Normal Slope</span>
+          <div className="text-lg font-mono font-bold text-cyan-400 mt-1 tabular-nums">+{spread10_2} bp</div>
+          <span className="text-[9px] text-slate-400 font-mono">Healthy Normal Slope</span>
         </div>
 
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">System Liquidity</span>
-          <div className="text-lg font-mono font-bold text-emerald-400 mt-1">+₹1.15 T</div>
-          <span className="text-[9px] text-emerald-500 font-mono">RBI Net Absorber (Surplus)</span>
+          <div className="text-lg font-mono font-bold text-emerald-400 mt-1 tabular-nums">+₹1.15 T</div>
+          <span className="text-[9px] text-emerald-400 font-mono">RBI Net Absorber (Surplus)</span>
         </div>
       </div>
 
@@ -123,16 +123,16 @@ export const FixedIncomeWorkspace: React.FC = () => {
 
           <div className="flex-1 flex items-center justify-center relative overflow-hidden">
             {loading ? (
-              <div className="text-xs font-mono text-slate-500">Loading sovereign debt data...</div>
+              <div className="text-xs font-mono text-slate-400">Loading sovereign debt data…</div>
             ) : (
-              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-full max-h-[280px]">
+              <svg viewBox={`0 0 ${chartW} ${chartH}`} role="img" aria-label="Sovereign G-Sec Yield Curve across tenors from 3M to 40Y" className="w-full h-full max-h-[280px]">
                 {/* Horizontal Yield Grid */}
                 {[6.6, 6.8, 7.0, 7.2, 7.4, 7.6].map((rate) => {
                   const y = getY(rate);
                   return (
                     <g key={rate}>
                       <line x1={pad.left} y1={y} x2={chartW - pad.right} y2={y} stroke="#1E2638" strokeDasharray="3 3" />
-                      <text x={pad.left - 8} y={y + 3} fill="#64748B" fontSize="9" textAnchor="end" fontFamily="monospace">
+                      <text x={pad.left - 8} y={y + 3} fill="#94A3B8" fontSize="9" textAnchor="end" fontFamily="monospace">
                         {rate.toFixed(1)}%
                       </text>
                     </g>
@@ -163,7 +163,20 @@ export const FixedIncomeWorkspace: React.FC = () => {
                   const cy = getY(pt['YTM %']);
                   const isSelected = selectedTenor === pt.Tenor;
                   return (
-                    <g key={pt.Tenor} className="cursor-pointer" onClick={() => setSelectedTenor(pt.Tenor)}>
+                    <g
+                      key={pt.Tenor}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedTenor(pt.Tenor)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedTenor(pt.Tenor);
+                        }
+                      }}
+                      aria-label={`Select tenor ${pt.Tenor} yield ${pt['YTM %'].toFixed(2)} percent`}
+                      className="cursor-pointer focus:outline-none"
+                    >
                       <circle
                         cx={cx}
                         cy={cy}
@@ -175,7 +188,7 @@ export const FixedIncomeWorkspace: React.FC = () => {
                       <text
                         x={cx}
                         y={chartH - pad.bottom + 14}
-                        fill={isSelected ? '#38BDF8' : '#64748B'}
+                        fill={isSelected ? '#38BDF8' : '#94A3B8'}
                         fontWeight={isSelected ? 'bold' : 'normal'}
                         fontSize="9"
                         textAnchor="middle"
@@ -285,8 +298,17 @@ export const FixedIncomeWorkspace: React.FC = () => {
               {curve.map((row) => (
                 <tr
                   key={row.Tenor}
+                  tabIndex={0}
+                  role="row"
                   onClick={() => setSelectedTenor(row.Tenor)}
-                  className={`border-b border-[#141A26] hover:bg-[#141A26] cursor-pointer transition-colors ${
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedTenor(row.Tenor);
+                    }
+                  }}
+                  aria-label={`Select ${row.Tenor} sovereign bond`}
+                  className={`border-b border-[#141A26] hover:bg-[#141A26] cursor-pointer transition-colors focus-visible:outline-none focus-visible:bg-[#141A26] ${
                     selectedTenor === row.Tenor ? 'bg-[#141A26] font-semibold text-cyan-400' : 'text-slate-300'
                   }`}
                 >

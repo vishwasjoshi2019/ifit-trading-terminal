@@ -105,32 +105,41 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
     <div className="flex flex-col h-full bg-terminal-panel font-mono text-terminal-text border-t border-terminal-border select-none">
       {/* Tab Navigation */}
       <div className="flex items-center justify-between border-b border-terminal-border bg-terminal-header text-xs">
-        <div className="flex">
+        <div className="flex" role="tablist" aria-label="Order ticket views">
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'TICKET'}
             onClick={() => setActiveTab('TICKET')}
-            className={`px-3 py-1.5 font-bold transition-colors ${
-              activeTab === 'TICKET' ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500' : 'text-gray-400 hover:text-gray-200'
+            className={`px-3 py-1.5 font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
+              activeTab === 'TICKET' ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500' : 'text-slate-400 hover:text-gray-200'
             }`}
           >
             ORDER TICKET
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'POSITIONS'}
             onClick={() => setActiveTab('POSITIONS')}
-            className={`px-3 py-1.5 font-bold transition-colors flex items-center gap-1.5 ${
-              activeTab === 'POSITIONS' ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500' : 'text-gray-400 hover:text-gray-200'
+            className={`px-3 py-1.5 font-bold transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
+              activeTab === 'POSITIONS' ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500' : 'text-slate-400 hover:text-gray-200'
             }`}
           >
             <span>POSITIONS ({positions.length})</span>
             {positions.length > 0 && (
-              <span className={`text-[10px] font-bold ${totalPnl >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
+              <span className={`text-[10px] font-bold tabular-nums ${totalPnl >= 0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
                 {totalPnl >= 0 ? '+' : ''}₹{Math.round(totalPnl).toLocaleString('en-IN')}
               </span>
             )}
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'ORDERS'}
             onClick={() => setActiveTab('ORDERS')}
-            className={`px-3 py-1.5 font-bold transition-colors ${
-              activeTab === 'ORDERS' ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500' : 'text-gray-400 hover:text-gray-200'
+            className={`px-3 py-1.5 font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
+              activeTab === 'ORDERS' ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500' : 'text-slate-400 hover:text-gray-200'
             }`}
           >
             LOG ({orders.length})
@@ -138,7 +147,7 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
         </div>
 
         {orderNotice && (
-          <div className="mr-3 text-[10px] text-terminal-green font-bold flex items-center gap-1 bg-green-950/40 border border-green-800/40 px-2 py-0.5 rounded animate-fade-in">
+          <div role="status" aria-live="polite" className="mr-3 text-[10px] text-terminal-green font-bold flex items-center gap-1 bg-green-950/40 border border-green-800/40 px-2 py-0.5 rounded animate-fade-in">
             <CheckCircle2 className="w-3 h-3" />
             {orderNotice}
           </div>
@@ -151,22 +160,24 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
           {/* Side Selector: Buy vs Sell */}
           <div className="grid grid-cols-2 gap-2">
             <button
+              type="button"
               onClick={() => setSide('BUY')}
-              className={`py-1.5 rounded font-bold text-xs flex items-center justify-center gap-1 transition-all ${
+              className={`py-1.5 rounded font-bold text-xs flex items-center justify-center gap-1 transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 ${
                 side === 'BUY'
                   ? 'bg-terminal-green text-black shadow-md'
-                  : 'bg-terminal-bg text-gray-400 hover:bg-terminal-hover border border-terminal-border'
+                  : 'bg-terminal-bg text-slate-400 hover:bg-terminal-hover border border-terminal-border'
               }`}
             >
               <ArrowUpRight className="w-4 h-4" />
               BUY / LONG
             </button>
             <button
+              type="button"
               onClick={() => setSide('SELL')}
-              className={`py-1.5 rounded font-bold text-xs flex items-center justify-center gap-1 transition-all ${
+              className={`py-1.5 rounded font-bold text-xs flex items-center justify-center gap-1 transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-400 ${
                 side === 'SELL'
                   ? 'bg-terminal-red text-white shadow-md'
-                  : 'bg-terminal-bg text-gray-400 hover:bg-terminal-hover border border-terminal-border'
+                  : 'bg-terminal-bg text-slate-400 hover:bg-terminal-hover border border-terminal-border'
               }`}
             >
               <ArrowDownRight className="w-4 h-4" />
@@ -177,14 +188,17 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
           {/* Order Type & Lots */}
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <label className="text-[10px] text-gray-400 uppercase font-semibold">Order Type</label>
-              <div className="flex rounded border border-terminal-border bg-terminal-bg mt-1">
+              <label className="text-[10px] text-slate-400 uppercase font-semibold">Order Type</label>
+              <div className="flex rounded border border-terminal-border bg-terminal-bg mt-1" role="radiogroup" aria-label="Order Type">
                 {(['MARKET', 'LIMIT', 'SL'] as const).map((t) => (
                   <button
                     key={t}
+                    type="button"
+                    role="radio"
+                    aria-checked={orderType === t}
                     onClick={() => setOrderType(t)}
-                    className={`flex-1 py-1 text-[11px] font-bold transition-colors ${
-                      orderType === t ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-200'
+                    className={`flex-1 py-1 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
+                      orderType === t ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-gray-200'
                     }`}
                   >
                     {t}
@@ -194,23 +208,30 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
             </div>
 
             <div>
-              <label className="text-[10px] text-gray-400 uppercase font-semibold">Lots ({lotSize}/lot)</label>
+              <label htmlFor="lot-quantity-input" className="text-[10px] text-slate-400 uppercase font-semibold">Lots ({lotSize}/lot)</label>
               <div className="flex items-center border border-terminal-border rounded bg-terminal-bg mt-1">
                 <button
+                  type="button"
                   onClick={() => setLots((prev) => Math.max(1, prev - 1))}
-                  className="px-2.5 py-1 text-gray-400 hover:text-gray-100 font-bold"
+                  aria-label="Decrease lots"
+                  className="min-w-[32px] min-h-[30px] flex items-center justify-center text-slate-400 hover:text-gray-100 font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                 >
                   -
                 </button>
                 <input
+                  id="lot-quantity-input"
                   type="number"
+                  inputMode="numeric"
+                  aria-label="Number of lots"
                   value={lots}
                   onChange={(e) => setLots(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full text-center bg-transparent text-xs text-gray-100 font-bold focus:outline-none"
+                  className="w-full text-center bg-transparent text-xs text-gray-100 font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 tabular-nums"
                 />
                 <button
+                  type="button"
                   onClick={() => setLots((prev) => prev + 1)}
-                  className="px-2.5 py-1 text-gray-400 hover:text-gray-100 font-bold"
+                  aria-label="Increase lots"
+                  className="min-w-[32px] min-h-[30px] flex items-center justify-center text-slate-400 hover:text-gray-100 font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                 >
                   +
                 </button>
@@ -221,28 +242,30 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
           {/* Limit Price Input if LIMIT or SL */}
           {orderType !== 'MARKET' && (
             <div>
-              <label className="text-[10px] text-gray-400 uppercase font-semibold">Limit Price (₹)</label>
+              <label htmlFor="limit-price-input" className="text-[10px] text-slate-400 uppercase font-semibold">Limit Price (₹)</label>
               <input
+                id="limit-price-input"
                 type="number"
+                aria-label="Limit execution price in rupees"
                 placeholder={ltp ? ltp.toFixed(2) : '0.00'}
                 value={limitPrice}
                 onChange={(e) => setLimitPrice(e.target.value)}
-                className="w-full mt-1 bg-terminal-bg border border-terminal-border px-2.5 py-1.5 rounded text-xs text-gray-100 focus:outline-none focus:border-blue-500 font-mono"
+                className="w-full mt-1 bg-terminal-bg border border-terminal-border px-2.5 py-1.5 rounded text-xs text-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 font-mono tabular-nums"
               />
             </div>
           )}
 
           {/* Order Summary Pill */}
-          <div className="p-2 bg-terminal-bg rounded border border-terminal-border/60 text-[11px] space-y-1">
-            <div className="flex justify-between text-gray-400">
+          <div className="p-2 bg-terminal-bg rounded border border-terminal-border/60 text-[11px] space-y-1 tabular-nums">
+            <div className="flex justify-between text-slate-400">
               <span>Total Quantity:</span>
               <span className="text-gray-200 font-bold">{totalQty} units</span>
             </div>
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-slate-400">
               <span>Exec Price:</span>
               <span className="text-gray-200 font-bold">₹{effectivePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-slate-400">
               <span>Margin Required (5x):</span>
               <span className="text-blue-400 font-bold">₹{marginRequired.toLocaleString('en-IN')}</span>
             </div>
@@ -250,8 +273,9 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
 
           {/* Primary Action Button */}
           <button
+            type="button"
             onClick={handlePlaceOrder}
-            className={`w-full py-2 rounded font-bold text-xs tracking-wider transition-all shadow-md active:scale-[0.98] ${
+            className={`w-full py-2.5 rounded font-bold text-xs tracking-wider transition-all shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
               side === 'BUY'
                 ? 'bg-terminal-green hover:bg-green-400 text-black'
                 : 'bg-terminal-red hover:bg-red-400 text-white'
@@ -264,9 +288,9 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
 
       {/* Tab 2: Live Positions */}
       {activeTab === 'POSITIONS' && (
-        <div className="p-2 flex-1 overflow-y-auto space-y-1.5 text-xs">
+        <div className="p-2 flex-1 overflow-y-auto space-y-1.5 text-xs tabular-nums">
           {positions.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-500 text-[11px] py-8">
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 text-[11px] py-8">
               <TrendingUp className="w-6 h-6 mb-1 opacity-40" />
               <span>No active positions. Execute orders to build book.</span>
             </div>
@@ -284,9 +308,9 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
                         {pos.side}
                       </span>
                       <span className="font-bold text-gray-200">{pos.symbol}</span>
-                      <span className="text-gray-400 text-[11px]">x{pos.qty}</span>
+                      <span className="text-slate-400 text-[11px]">x{pos.qty}</span>
                     </div>
-                    <div className="text-[10px] text-gray-400 mt-0.5">
+                    <div className="text-[10px] text-slate-400 mt-0.5">
                       Avg: ₹{pos.avgPrice.toLocaleString('en-IN')} | LTP: ₹{ltp.toLocaleString('en-IN')}
                     </div>
                   </div>
@@ -301,8 +325,10 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => closePosition(pos)}
-                      className="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] rounded border border-gray-700 transition-colors"
+                      aria-label={`Exit position for ${pos.symbol}`}
+                      className="px-2.5 py-1 min-h-[30px] bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white text-[11px] rounded border border-gray-700 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
                     >
                       Exit
                     </button>
@@ -316,9 +342,9 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
 
       {/* Tab 3: Order History Log */}
       {activeTab === 'ORDERS' && (
-        <div className="p-2 flex-1 overflow-y-auto space-y-1 text-xs">
+        <div className="p-2 flex-1 overflow-y-auto space-y-1 text-xs tabular-nums">
           {orders.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-500 text-[11px] py-8">
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 text-[11px] py-8">
               <DollarSign className="w-6 h-6 mb-1 opacity-40" />
               <span>No orders executed yet in this session.</span>
             </div>
@@ -330,12 +356,12 @@ export const OrderTicketPanel: React.FC<OrderTicketPanelProps> = ({
                     {o.side}
                   </span>
                   <span className="text-gray-300 font-semibold">{o.symbol}</span>
-                  <span className="text-gray-500">x{o.qty}</span>
+                  <span className="text-slate-400">x{o.qty}</span>
                 </div>
                 <div className="flex items-center gap-2 text-[10px]">
-                  <span className="text-gray-200">₹{o.price.toLocaleString('en-IN')}</span>
+                  <span className="text-gray-200 font-medium">₹{o.price.toLocaleString('en-IN')}</span>
                   <span className="text-terminal-green font-bold">FILLED</span>
-                  <span className="text-gray-500">{o.time}</span>
+                  <span className="text-slate-400">{o.time}</span>
                 </div>
               </div>
             ))

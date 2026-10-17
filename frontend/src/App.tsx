@@ -117,33 +117,42 @@ export const App: React.FC = () => {
               {/* Bottom Half: Switchable Cockpit Tabs (Order Ticket / Tape / Option Chain) */}
               <div className="h-[58%] flex flex-col">
                 {/* Cockpit Tab Switcher */}
-                <div className="flex items-center bg-terminal-header border-b border-terminal-border text-[11px] font-mono">
+                <div className="flex items-center bg-terminal-header border-b border-terminal-border text-[11px] font-mono" role="tablist" aria-label="Cockpit right utility panel tabs">
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={cockpitRightTab === 'TICKET'}
                     onClick={() => setCockpitRightTab('TICKET')}
-                    className={`flex-1 py-1.5 text-center font-bold transition-colors ${
+                    className={`flex-1 py-1.5 text-center font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500 ${
                       cockpitRightTab === 'TICKET'
                         ? 'bg-terminal-panel text-cyan-400 border-b-2 border-cyan-500'
-                        : 'text-gray-500 hover:text-gray-300'
+                        : 'text-slate-400 hover:text-gray-300'
                     }`}
                   >
                     ORDER TICKET
                   </button>
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={cockpitRightTab === 'TAPE'}
                     onClick={() => setCockpitRightTab('TAPE')}
-                    className={`flex-1 py-1.5 text-center font-bold transition-colors ${
+                    className={`flex-1 py-1.5 text-center font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
                       cockpitRightTab === 'TAPE'
                         ? 'bg-terminal-panel text-blue-400 border-b-2 border-blue-500'
-                        : 'text-gray-500 hover:text-gray-300'
+                        : 'text-slate-400 hover:text-gray-300'
                     }`}
                   >
                     TAPE
                   </button>
                   <button
+                    type="button"
+                    role="tab"
+                    aria-selected={cockpitRightTab === 'OPTIONS'}
                     onClick={() => setCockpitRightTab('OPTIONS')}
-                    className={`flex-1 py-1.5 text-center font-bold transition-colors ${
+                    className={`flex-1 py-1.5 text-center font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500 ${
                       cockpitRightTab === 'OPTIONS'
                         ? 'bg-terminal-panel text-amber-400 border-b-2 border-amber-500'
-                        : 'text-gray-500 hover:text-gray-300'
+                        : 'text-slate-400 hover:text-gray-300'
                     }`}
                   >
                     OPTIONS

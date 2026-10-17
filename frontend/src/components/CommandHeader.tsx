@@ -87,14 +87,17 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
           <div className="h-4 w-[1px] bg-terminal-border" />
 
           {/* Institutional Workspace Tab Bar */}
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-1" role="tablist" aria-label="Institutional workspaces">
             {WORKSPACE_TABS.map((tab) => {
               const isActive = activeWorkspace === tab.id;
               return (
                 <button
                   key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
                   onClick={() => onSelectWorkspace(tab.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
                     isActive
                       ? 'bg-blue-600 text-white font-bold shadow-[0_0_12px_rgba(37,99,235,0.4)] border border-blue-400/50'
                       : 'text-gray-400 hover:text-gray-200 hover:bg-terminal-panel border border-transparent'
@@ -119,8 +122,10 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
         <div className="flex items-center gap-2">
           {/* Active Broker Pill */}
           <button
+            type="button"
             onClick={onOpenSettings}
-            className="flex items-center gap-1.5 bg-terminal-panel hover:bg-terminal-hover border border-terminal-border px-2 py-0.5 rounded text-[11px] font-mono transition-colors"
+            aria-label="Data feed and broker configuration"
+            className="flex items-center gap-1.5 bg-terminal-panel hover:bg-terminal-hover border border-terminal-border px-2 py-0.5 rounded text-[11px] font-mono transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
@@ -148,8 +153,9 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
                 : 'https://share.streamlit.io/vishwasjoshi2019/ifit-trading-terminal/main/app.py'
             }
             target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300 bg-cyan-950/40 border border-cyan-800/50 px-2 py-0.5 rounded transition-colors"
+            rel="noopener noreferrer"
+            aria-label="Open Legacy Quant Lab in new tab (external link)"
+            className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 hover:text-cyan-300 bg-cyan-950/40 border border-cyan-800/50 px-2 py-0.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500"
           >
             <span>Legacy Lab</span>
             <ExternalLink className="w-3 h-3" />
@@ -160,7 +166,7 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
       {/* 2. Global Live Ticker Tape Strip */}
       <div className="flex items-center justify-between px-3 py-1 bg-[#090C12] border-b border-terminal-border/40 text-[11px] font-mono overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-4">
-          <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider">INDICES & BLUECHIPS:</span>
+          <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">INDICES & BLUECHIPS:</span>
           {TICKER_SYMBOLS.map((sym) => {
             const tick = ticks[sym];
             const ltp = tick ? tick.ltp : 0;
@@ -168,43 +174,45 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
             const isPos = pct >= 0;
 
             return (
-              <div
+              <button
                 key={sym}
+                type="button"
                 onClick={() => onSelectSymbol(sym)}
-                className={`flex items-center gap-1.5 cursor-pointer px-2 py-0.5 rounded transition-colors ${
-                  activeSymbol === sym ? 'bg-blue-950/60 border border-blue-500/40 font-bold' : 'hover:bg-terminal-hover'
+                aria-label={`Select ${sym} ticker quote`}
+                className={`flex items-center gap-1.5 cursor-pointer px-2 py-0.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
+                  activeSymbol === sym ? 'bg-blue-950/60 border border-blue-500/40 font-bold' : 'hover:bg-terminal-hover border border-transparent'
                 }`}
               >
                 <span className="text-gray-300">{sym}</span>
-                <span className="text-gray-100">
-                  {ltp > 0 ? ltp.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '...'}
+                <span className="text-gray-100 tabular-nums">
+                  {ltp > 0 ? ltp.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '…'}
                 </span>
-                <span className={`text-[10px] ${isPos ? 'text-terminal-green' : 'text-terminal-red'}`}>
+                <span className={`text-[10px] tabular-nums ${isPos ? 'text-terminal-green' : 'text-terminal-red'}`}>
                   {isPos ? '+' : ''}
                   {pct.toFixed(2)}%
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>
 
         {/* Active Quote Quick Display */}
         {ticks[activeSymbol] && (
-          <div className="hidden lg:flex items-center gap-4 text-[10px] text-gray-400">
+          <div className="hidden lg:flex items-center gap-4 text-[10px] text-gray-400 font-mono tabular-nums">
             <div>
-              <span className="text-gray-500 mr-1">OPEN:</span>
+              <span className="text-slate-400 mr-1">OPEN:</span>
               <span className="text-gray-300">₹{ticks[activeSymbol].open.toFixed(2)}</span>
             </div>
             <div>
-              <span className="text-gray-500 mr-1">HIGH:</span>
+              <span className="text-slate-400 mr-1">HIGH:</span>
               <span className="text-terminal-green">₹{ticks[activeSymbol].high.toFixed(2)}</span>
             </div>
             <div>
-              <span className="text-gray-500 mr-1">LOW:</span>
+              <span className="text-slate-400 mr-1">LOW:</span>
               <span className="text-terminal-red">₹{ticks[activeSymbol].low.toFixed(2)}</span>
             </div>
             <div>
-              <span className="text-gray-500 mr-1">VOL:</span>
+              <span className="text-slate-400 mr-1">VOL:</span>
               <span className="text-gray-300 font-semibold">{ticks[activeSymbol].volume.toLocaleString()}</span>
             </div>
           </div>
@@ -215,13 +223,14 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
       {(activeWorkspace === 'COCKPIT' || activeWorkspace === 'OPTIONS' || activeWorkspace === 'RISK') && (
         <div className="flex items-center justify-between px-3 py-1 bg-terminal-bg text-xs font-mono border-b border-terminal-border/30">
           <div className="flex items-center gap-3">
-            <span className="text-gray-400 uppercase tracking-wider text-[10px]">Symbol:</span>
+            <span className="text-slate-400 uppercase tracking-wider text-[10px]">Symbol:</span>
             <div className="flex items-center gap-1">
               {['NIFTY', 'BANKNIFTY', 'FINNIFTY', 'RELIANCE', 'HDFCBANK'].map((s) => (
                 <button
                   key={s}
+                  type="button"
                   onClick={() => onSelectSymbol(s)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
+                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
                     activeSymbol === s
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'bg-terminal-panel text-gray-400 hover:text-gray-200 hover:bg-terminal-hover border border-terminal-border'
@@ -237,13 +246,14 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
             {/* Timeframe Selector (Cockpit) */}
             {activeWorkspace === 'COCKPIT' && (
               <>
-                <span className="text-gray-400 uppercase tracking-wider text-[10px]">TF:</span>
+                <span className="text-slate-400 uppercase tracking-wider text-[10px]">TF:</span>
                 <div className="flex items-center gap-1">
                   {TIMEFRAMES.map((tf) => (
                     <button
                       key={tf}
+                      type="button"
                       onClick={() => onSelectTimeframe(tf)}
-                      className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
+                      className={`px-2 py-0.5 rounded text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
                         timeframe === tf
                           ? 'bg-amber-600/30 text-amber-300 border border-amber-500/50 font-bold'
                           : 'text-gray-400 hover:text-gray-200'
@@ -257,8 +267,8 @@ export const CommandHeader: React.FC<CommandHeaderProps> = ({
             )}
           </div>
 
-          <div className="text-[10px] text-gray-500 font-mono">
-            Press <kbd className="px-1 py-0.5 bg-gray-800 rounded border border-gray-700 text-gray-300">F1-F6</kbd> to switch workspaces instantly
+          <div className="text-[10px] text-slate-400 font-mono">
+            Press <kbd className="px-1 py-0.5 bg-gray-800 rounded border border-gray-700 text-gray-300">F1–F6</kbd> to switch workspaces instantly
           </div>
         </div>
       )}

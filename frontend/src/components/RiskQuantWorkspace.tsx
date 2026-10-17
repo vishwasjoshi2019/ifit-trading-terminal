@@ -95,21 +95,25 @@ export const RiskQuantWorkspace: React.FC<RiskQuantWorkspaceProps> = ({ currentS
 
         <div className="flex items-center gap-4 text-xs font-mono">
           <div className="flex items-center gap-1.5">
-            <label className="text-slate-400">Spot:</label>
+            <label htmlFor="spot-input" className="text-slate-400">Spot:</label>
             <input
+              id="spot-input"
               type="number"
+              aria-label="Underlying spot price"
               value={spot}
               onChange={(e) => setSpot(Number(e.target.value))}
-              className="w-24 bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-100 text-right focus:outline-none focus:border-cyan-500"
+              className="w-24 bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-100 text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 tabular-nums"
             />
           </div>
 
           <div className="flex items-center gap-1.5">
-            <label className="text-slate-400">Horizon:</label>
+            <label htmlFor="horizon-select" className="text-slate-400">Horizon:</label>
             <select
+              id="horizon-select"
+              aria-label="Simulation forecast horizon"
               value={days}
               onChange={(e) => setDays(Number(e.target.value))}
-              className="bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-100 focus:outline-none focus:border-cyan-500"
+              className="bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
             >
               <option value={7}>7 Days (1W)</option>
               <option value={14}>14 Days (2W)</option>
@@ -120,11 +124,13 @@ export const RiskQuantWorkspace: React.FC<RiskQuantWorkspaceProps> = ({ currentS
           </div>
 
           <div className="flex items-center gap-1.5">
-            <label className="text-slate-400">Paths:</label>
+            <label htmlFor="paths-select" className="text-slate-400">Paths:</label>
             <select
+              id="paths-select"
+              aria-label="Monte Carlo path count"
               value={paths}
               onChange={(e) => setPaths(Number(e.target.value))}
-              className="bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-100 focus:outline-none focus:border-cyan-500"
+              className="bg-[#141A26] border border-[#1E2638] rounded px-2 py-1 text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
             >
               <option value={500}>500 paths</option>
               <option value={1000}>1,000 paths</option>
@@ -133,17 +139,18 @@ export const RiskQuantWorkspace: React.FC<RiskQuantWorkspaceProps> = ({ currentS
           </div>
 
           <button
+            type="button"
             onClick={runSimulation}
             disabled={loading}
-            className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-semibold rounded text-xs transition-colors flex items-center gap-1.5"
+            className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-semibold rounded text-xs transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
           >
             {loading ? (
               <>
-                <svg className="animate-spin h-3 w-3 text-white" viewBox="0 0 24 24" fill="none">
+                <svg className="animate-spin h-3 w-3 text-white" aria-hidden="true" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
-                Simulating...
+                Simulating…
               </>
             ) : (
               'Run Monte Carlo'
@@ -255,7 +262,7 @@ export const RiskQuantWorkspace: React.FC<RiskQuantWorkspaceProps> = ({ currentS
 
           <div className="flex-1 flex items-center justify-center relative overflow-hidden">
             {mcData ? (
-              <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full max-h-[300px]">
+              <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Monte Carlo simulation path cone and confidence intervals" className="w-full h-full max-h-[300px]">
                 {/* Horizontal Grid lines */}
                 {[0.2, 0.4, 0.6, 0.8].map((ratio) => {
                   const val = minVal + ratio * (maxVal - minVal);
@@ -384,7 +391,7 @@ export const RiskQuantWorkspace: React.FC<RiskQuantWorkspaceProps> = ({ currentS
             <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
               <div className="bg-emerald-500 h-full w-4/5"></div>
             </div>
-            <span className="text-[9px] text-slate-500 font-mono block mt-1">
+            <span className="text-[9px] text-slate-400 font-mono block mt-1">
               Zero margin call risk up to -18.4% instantaneous market gap.
             </span>
           </div>

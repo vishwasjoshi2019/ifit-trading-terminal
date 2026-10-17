@@ -188,9 +188,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, time
       <div className="flex items-center justify-between px-3 py-1.5 bg-terminal-panel border-b border-terminal-border text-xs font-mono text-gray-300">
         <div className="flex items-center gap-2">
           <span className="font-bold text-gray-100">{symbol}</span>
-          <span className="text-gray-500">•</span>
+          <span className="text-slate-400">•</span>
           <span className="text-amber-400 font-semibold">{timeframe}</span>
-          <span className="text-gray-500">•</span>
+          <span className="text-slate-400">•</span>
           <span className="text-blue-400 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
             EMA 9
@@ -202,13 +202,15 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ symbol, time
         </div>
 
         <div className="flex items-center gap-2">
-          {loading && <span className="text-[11px] text-gray-500 animate-pulse">Loading candles...</span>}
+          {loading && <span className="text-[11px] text-slate-400 animate-pulse">Loading candles…</span>}
           <button
+            type="button"
             onClick={() => setShowOverlays(!showOverlays)}
-            className={`px-2 py-0.5 rounded text-[11px] border flex items-center gap-1 ${
+            aria-label="Toggle chart indicator overlays"
+            className={`px-2 py-0.5 rounded text-[11px] border flex items-center gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
               showOverlays
                 ? 'bg-blue-950/40 text-blue-300 border-blue-500/40'
-                : 'bg-terminal-bg text-gray-500 border-terminal-border'
+                : 'bg-terminal-bg text-slate-400 border-terminal-border hover:text-slate-200'
             }`}
           >
             <Layers className="w-3 h-3" />

@@ -74,17 +74,26 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="broker-modal-title"
+    >
       <div className="bg-terminal-header border border-terminal-border rounded-lg w-full max-w-lg shadow-2xl overflow-hidden font-mono text-terminal-text">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-terminal-border bg-terminal-panel">
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-bold text-gray-100">DATA FEED & BROKER CONFIGURATION</h2>
+            <h2 id="broker-modal-title" className="text-sm font-bold text-gray-100">
+              DATA FEED & BROKER CONFIGURATION
+            </h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1 hover:bg-terminal-hover rounded text-gray-400 hover:text-gray-100 transition-colors"
+            aria-label="Close broker settings modal"
+            className="p-1 hover:bg-terminal-hover rounded text-gray-400 hover:text-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
           >
             <X className="w-4 h-4" />
           </button>
@@ -102,7 +111,7 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
           {/* Backend Streaming Server URL */}
           <div className="space-y-1.5 p-3 bg-terminal-bg rounded border border-terminal-border">
             <div className="flex items-center justify-between">
-              <label className="text-xs text-gray-300 font-semibold flex items-center gap-1.5">
+              <label htmlFor="backend-endpoint-input" className="text-xs text-gray-300 font-semibold flex items-center gap-1.5">
                 <Globe className="w-3.5 h-3.5 text-blue-400" />
                 Backend Streaming Endpoint (Render / Local)
               </label>
@@ -114,27 +123,31 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
             </div>
             <div className="flex gap-2">
               <input
+                id="backend-endpoint-input"
                 type="text"
                 value={backendUrl}
                 onChange={(e) => setBackendUrlState(e.target.value)}
                 placeholder="e.g. https://your-terminal.onrender.com or http://localhost:8000"
-                className="flex-1 bg-terminal-panel border border-terminal-border px-2.5 py-1.5 text-xs rounded text-gray-200 focus:outline-none focus:border-blue-500 font-mono"
+                aria-label="Backend streaming server URL"
+                autoComplete="off"
+                spellCheck={false}
+                className="flex-1 bg-terminal-panel border border-terminal-border px-2.5 py-1.5 text-xs rounded text-gray-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 font-mono"
               />
               <button
                 type="button"
                 onClick={handleSaveUrl}
-                className="px-3 py-1 bg-blue-600/80 hover:bg-blue-600 text-white text-xs rounded font-semibold transition-colors"
+                className="px-3 py-1 bg-blue-600/80 hover:bg-blue-600 text-white text-xs rounded font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
               >
                 Connect
               </button>
             </div>
-            <div className="text-[10px] text-gray-500">
-              Leave blank to use default <span className="text-gray-400">http://localhost:8000</span> or enter your Render URL.
+            <div className="text-[10px] text-slate-400">
+              Leave blank to use default <span className="text-gray-300">http://localhost:8000</span> or enter your Render URL.
             </div>
           </div>
 
-          <div className="space-y-2.5">
-            <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider">
+          <div className="space-y-2.5" role="radiogroup" aria-label="Select data feed provider">
+            <label className="text-xs text-slate-400 font-semibold uppercase tracking-wider block">
               Active Provider Adapter
             </label>
 
@@ -143,10 +156,13 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
               const provHealth = health?.providers.find((item) => item.name === p.id);
 
               return (
-                <div
+                <button
                   key={p.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   onClick={() => !loading && handleSwitch(p.id)}
-                  className={`p-3 rounded border cursor-pointer transition-all ${
+                  className={`w-full text-left p-3 rounded border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     isSelected
                       ? 'bg-blue-950/30 border-blue-500 shadow-md'
                       : 'bg-terminal-panel border-terminal-border hover:bg-terminal-hover'
@@ -160,22 +176,22 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
                         ACTIVE
                       </span>
                     ) : (
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-[10px] text-slate-400">
                         {provHealth?.status || 'READY'}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-gray-400 leading-relaxed">{p.desc}</p>
-                </div>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">{p.desc}</p>
+                </button>
               );
             })}
           </div>
 
           {/* Instructions */}
-          <div className="p-3 bg-terminal-bg rounded border border-terminal-border/60 text-[11px] text-gray-400 space-y-1">
+          <div className="p-3 bg-terminal-bg rounded border border-terminal-border/60 text-[11px] text-slate-400 space-y-1">
             <div className="font-semibold text-gray-300">Live Credentials Setup:</div>
             <div>To activate live exchange feeds, populate your credentials in <code className="text-amber-400">.env</code>:</div>
-            <pre className="text-[10px] bg-black/40 p-1.5 rounded text-gray-300 mt-1">
+            <pre className="text-[10px] bg-black/40 p-1.5 rounded text-gray-300 mt-1 font-mono">
               CHOICE_FINX_USER_ID=UFA113{'\n'}
               CHOICE_FINX_TOKEN=your_jwt_token{'\n'}
               DHAN_CLIENT_ID=your_client_id{'\n'}
@@ -187,8 +203,9 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
         {/* Footer */}
         <div className="flex justify-end px-4 py-2.5 bg-terminal-panel border-t border-terminal-border">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded transition-colors"
+            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
           >
             Done
           </button>

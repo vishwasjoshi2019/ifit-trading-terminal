@@ -39,15 +39,15 @@ export const OptionChainMatrix: React.FC<OptionChainMatrixProps> = ({ symbol }) 
 
   if (loading && !chain) {
     return (
-      <div className="h-full bg-terminal-panel flex items-center justify-center text-xs font-mono text-gray-500">
-        Loading option chain matrix...
+      <div className="h-full bg-terminal-panel flex items-center justify-center text-xs font-mono text-slate-400">
+        Loading option chain matrix…
       </div>
     );
   }
 
   if (!chain || !chain.strikes || chain.strikes.length === 0) {
     return (
-      <div className="h-full bg-terminal-panel flex items-center justify-center text-xs font-mono text-gray-500">
+      <div className="h-full bg-terminal-panel flex items-center justify-center text-xs font-mono text-slate-400">
         No active option chain data available for {symbol}.
       </div>
     );
@@ -61,26 +61,26 @@ export const OptionChainMatrix: React.FC<OptionChainMatrixProps> = ({ symbol }) 
       <div className="flex items-center justify-between px-3 py-1.5 bg-terminal-header border-b border-terminal-border">
         <div className="flex items-center gap-2">
           <span className="font-bold text-gray-200">OPTION CHAIN MATRIX</span>
-          <span className="text-[10px] text-gray-400">EXPIRY: {chain.expiry}</span>
+          <span className="text-[10px] text-slate-400">({symbol} EXP: {chain.expiry})</span>
         </div>
 
-        <div className="flex items-center gap-4 text-[11px]">
+        <div className="flex items-center gap-4 text-[11px] tabular-nums">
           <div className="flex items-center gap-1">
-            <span className="text-gray-400">PCR (OI):</span>
+            <span className="text-slate-400">PCR (OI):</span>
             <span className={`font-bold ${chain.pcr_oi >= 1.0 ? 'text-terminal-green' : 'text-terminal-red'}`}>
               {chain.pcr_oi.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <Target className="w-3 h-3 text-amber-400" />
-            <span className="text-gray-400">MAX PAIN:</span>
+            <span className="text-slate-400">MAX PAIN:</span>
             <span className="text-amber-400 font-bold">₹{chain.max_pain.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
       {/* Table Headers */}
-      <div className="grid grid-cols-5 px-3 py-1 text-[10px] text-gray-500 font-bold border-b border-terminal-border/40 bg-terminal-bg text-center">
+      <div className="grid grid-cols-5 px-3 py-1 text-[10px] text-slate-400 font-bold border-b border-terminal-border/40 bg-terminal-bg text-center">
         <span className="text-left text-blue-400">CALL OI</span>
         <span className="text-blue-400">CALL LTP</span>
         <span className="text-amber-400 font-black">STRIKE</span>
@@ -89,7 +89,7 @@ export const OptionChainMatrix: React.FC<OptionChainMatrixProps> = ({ symbol }) 
       </div>
 
       {/* Strikes List */}
-      <div className="flex-1 overflow-y-auto px-2 divide-y divide-terminal-border/20">
+      <div className="flex-1 overflow-y-auto px-2 divide-y divide-terminal-border/20 tabular-nums">
         {chain.strikes.map((s) => {
           const isAtm = Math.abs(s.strike - spot) <= 50;
 

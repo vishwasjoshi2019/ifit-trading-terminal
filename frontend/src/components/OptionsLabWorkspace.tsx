@@ -182,11 +182,12 @@ export const OptionsLabWorkspace: React.FC<OptionsLabWorkspaceProps> = ({ symbol
           ).map(([stratKey, label]) => (
             <button
               key={stratKey}
+              type="button"
               onClick={() => setSelectedStrategy(stratKey)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
                 selectedStrategy === stratKey
                   ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-terminal-bg border border-terminal-border text-gray-400 hover:text-gray-100'
+                  : 'bg-terminal-bg border border-terminal-border text-slate-400 hover:text-gray-100'
               }`}
             >
               {label}
@@ -201,40 +202,40 @@ export const OptionsLabWorkspace: React.FC<OptionsLabWorkspaceProps> = ({ symbol
         <div className="bg-terminal-panel p-3.5 rounded border border-terminal-border space-y-3">
           <div className="flex items-center justify-between border-b border-terminal-border pb-2">
             <span className="text-xs font-bold text-gray-200">{metrics.title}</span>
-            <span className="text-[10px] text-blue-400 font-semibold bg-blue-950/40 px-2 py-0.5 rounded border border-blue-800/40">
+            <span className="text-[10px] text-blue-400 font-semibold bg-blue-950/40 px-2 py-0.5 rounded border border-blue-800/40 tabular-nums">
               R:R {metrics.rrRatio}
             </span>
           </div>
-          <p className="text-[11px] text-gray-400 leading-relaxed">{metrics.description}</p>
+          <p className="text-[11px] text-slate-400 leading-relaxed">{metrics.description}</p>
 
-          <div className="space-y-1.5">
-            <span className="text-[10px] text-gray-400 uppercase font-semibold">Legs Breakdown:</span>
+          <div className="space-y-1.5 tabular-nums">
+            <span className="text-[10px] text-slate-400 uppercase font-semibold">Legs Breakdown:</span>
             {metrics.legs.map((leg, i) => (
               <div key={i} className="flex justify-between items-center text-xs p-1.5 bg-terminal-bg rounded border border-terminal-border/60">
                 <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${leg.type === 'BUY' ? 'bg-green-950 text-terminal-green' : 'bg-red-950 text-terminal-red'}`}>
                   {leg.type}
                 </span>
                 <span className="font-bold text-gray-200">{symbol} {leg.strike} {leg.opt}</span>
-                <span className="text-gray-400">₹{leg.premium}</span>
+                <span className="text-slate-400">₹{leg.premium}</span>
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-3 gap-2 pt-1 text-center text-xs">
+          <div className="grid grid-cols-3 gap-2 pt-1 text-center text-xs tabular-nums">
             <div className="p-2 bg-terminal-bg rounded border border-terminal-border/60">
-              <div className="text-[10px] text-gray-500 uppercase">Max Profit</div>
+              <div className="text-[10px] text-slate-400 uppercase">Max Profit</div>
               <div className="font-bold text-terminal-green text-xs mt-0.5">
                 {typeof metrics.maxProfit === 'number' ? `₹${metrics.maxProfit.toLocaleString('en-IN')}` : metrics.maxProfit}
               </div>
             </div>
             <div className="p-2 bg-terminal-bg rounded border border-terminal-border/60">
-              <div className="text-[10px] text-gray-500 uppercase">Max Loss</div>
+              <div className="text-[10px] text-slate-400 uppercase">Max Loss</div>
               <div className="font-bold text-terminal-red text-xs mt-0.5">
                 {typeof metrics.maxLoss === 'number' ? `₹${metrics.maxLoss.toLocaleString('en-IN')}` : metrics.maxLoss}
               </div>
             </div>
             <div className="p-2 bg-terminal-bg rounded border border-terminal-border/60">
-              <div className="text-[10px] text-gray-500 uppercase">Breakeven</div>
+              <div className="text-[10px] text-slate-400 uppercase">Breakeven</div>
               <div className="font-bold text-amber-400 text-xs mt-0.5">{metrics.breakeven}</div>
             </div>
           </div>
@@ -247,7 +248,7 @@ export const OptionsLabWorkspace: React.FC<OptionsLabWorkspaceProps> = ({ symbol
               <TrendingUp className="w-3.5 h-3.5 text-terminal-green" />
               <span>DYNAMIC EXPIRY PAYOFF CURVE (MTM PROFILE)</span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] text-gray-400">
+            <div className="flex items-center gap-3 text-[10px] text-slate-400 tabular-nums">
               <span>ATM: ₹{atm}</span>
               <span>IV: {ivOverride}%</span>
               <span>DTE: {daysToExpiry}D</span>
@@ -257,15 +258,15 @@ export const OptionsLabWorkspace: React.FC<OptionsLabWorkspaceProps> = ({ symbol
           <div className="relative w-full h-[180px] bg-[#05070a] rounded border border-terminal-border/50 my-2 overflow-hidden flex items-center justify-center">
             {/* Zero axis line */}
             <div className="absolute w-full h-[1px] bg-gray-700/80 top-1/2" />
-            <span className="absolute left-2 top-[44%] text-[9px] text-gray-400 font-bold">PROFIT (+)</span>
-            <span className="absolute left-2 top-[54%] text-[9px] text-gray-400 font-bold">LOSS (-)</span>
+            <span className="absolute left-2 top-[44%] text-[9px] text-slate-400 font-bold">PROFIT (+)</span>
+            <span className="absolute left-2 top-[54%] text-[9px] text-slate-400 font-bold">LOSS (-)</span>
 
-            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+            <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Dynamic expiry payoff curve for selected options strategy" className="w-full h-full overflow-visible">
               <polyline fill="none" stroke="#22c55e" strokeWidth="2.5" points={polylineStr} />
             </svg>
           </div>
 
-          <div className="flex justify-between text-[10px] text-gray-500 px-1">
+          <div className="flex justify-between text-[10px] text-slate-400 px-1 tabular-nums">
             <span>₹{(startPrice).toFixed(0)} (-{(range / spot * 100).toFixed(1)}%)</span>
             <span className="text-blue-400 font-bold">SPOT: ₹{spot.toFixed(0)}</span>
             <span>₹{(endPrice).toFixed(0)} (+{(range / spot * 100).toFixed(1)}%)</span>

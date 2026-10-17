@@ -8,9 +8,9 @@ interface OrderBookDepthPanelProps {
 export const OrderBookDepthPanel: React.FC<OrderBookDepthPanelProps> = ({ depth, symbol }) => {
   if (!depth || !depth.levels || depth.levels.length === 0) {
     return (
-      <div className="flex flex-col h-full bg-terminal-panel p-3 text-xs font-mono text-gray-500">
+      <div className="flex flex-col h-full bg-terminal-panel p-3 text-xs font-mono text-slate-400">
         <div className="font-semibold text-gray-400 mb-2">ORDER BOOK (L2)</div>
-        <div className="flex-1 flex items-center justify-center">Connecting to depth feed...</div>
+        <div className="flex-1 flex items-center justify-center">Connecting to depth feed…</div>
       </div>
     );
   }
@@ -28,28 +28,31 @@ export const OrderBookDepthPanel: React.FC<OrderBookDepthPanelProps> = ({ depth,
     <div className="flex flex-col h-full bg-terminal-panel border-b border-terminal-border text-xs font-mono select-none">
       {/* Header & Spread */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-terminal-header border-b border-terminal-border">
-        <span className="font-bold text-gray-200">MARKET DEPTH</span>
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="text-gray-400">SPREAD:</span>
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-gray-200">MARKET DEPTH</span>
+          <span className="text-[10px] text-slate-400">({symbol})</span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] tabular-nums">
+          <span className="text-slate-400">SPREAD:</span>
           <span className="text-amber-400 font-semibold">₹{depth.spread.toFixed(2)}</span>
         </div>
       </div>
 
       {/* Buy/Sell Volume Ratio Bar */}
       <div className="px-3 py-1.5 border-b border-terminal-border/60 bg-terminal-bg">
-        <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+        <div className="flex justify-between text-[10px] text-slate-400 mb-1 tabular-nums">
           <span className="text-terminal-green">BUY: {totalBuy.toLocaleString()} ({buyRatio.toFixed(1)}%)</span>
           <span className="text-terminal-red">SELL: {totalSell.toLocaleString()} ({(100 - buyRatio).toFixed(1)}%)</span>
         </div>
         <div className="w-full h-1.5 bg-terminal-border rounded-full flex overflow-hidden">
-          <div className="bg-terminal-green transition-all duration-300" style={{ width: `${buyRatio}%` }} />
-          <div className="bg-terminal-red transition-all duration-300" style={{ width: `${100 - buyRatio}%` }} />
+          <div className="bg-terminal-green transition-[width] duration-300" style={{ width: `${buyRatio}%` }} />
+          <div className="bg-terminal-red transition-[width] duration-300" style={{ width: `${100 - buyRatio}%` }} />
         </div>
       </div>
 
       {/* Levels Table */}
-      <div className="flex-1 overflow-y-auto px-2 py-1">
-        <div className="grid grid-cols-4 text-[10px] text-gray-500 font-bold border-b border-terminal-border/40 pb-1 mb-1">
+      <div className="flex-1 overflow-y-auto px-2 py-1 tabular-nums">
+        <div className="grid grid-cols-4 text-[10px] text-slate-400 font-bold border-b border-terminal-border/40 pb-1 mb-1">
           <span>QTY</span>
           <span>BID</span>
           <span className="text-right">ASK</span>

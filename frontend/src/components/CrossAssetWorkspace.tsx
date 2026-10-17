@@ -79,7 +79,7 @@ export const CrossAssetWorkspace: React.FC = () => {
           <div className="text-sm font-mono font-bold text-slate-200 mt-1 truncate">
             {data ? data.leadership : 'EQUITIES & GOLD'}
           </div>
-          <span className="text-[9px] text-slate-500 font-mono">Strongest Relative Strength</span>
+          <span className="text-[9px] text-slate-400 font-mono">Strongest Relative Strength</span>
         </div>
 
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
@@ -87,13 +87,13 @@ export const CrossAssetWorkspace: React.FC = () => {
           <div className="text-sm font-mono font-bold text-rose-400 mt-1 truncate">
             {data ? data.lagging : 'RATES & FX'}
           </div>
-          <span className="text-[9px] text-slate-500 font-mono">Yield Pressure / FX Consolidation</span>
+          <span className="text-[9px] text-slate-400 font-mono">Yield Pressure / FX Consolidation</span>
         </div>
 
         <div className="bg-[#0B0E14] border border-[#1E2638] rounded p-2.5">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">RBI FX Buffer</span>
-          <div className="text-base font-mono font-bold text-emerald-400 mt-1">$704 Billion</div>
-          <span className="text-[9px] text-emerald-500 font-mono">All-time High Currency Defense</span>
+          <div className="text-base font-mono font-bold text-emerald-400 mt-1 tabular-nums">$704 Billion</div>
+          <span className="text-[9px] text-emerald-400 font-mono">All-time High Currency Defense</span>
         </div>
       </div>
 
@@ -119,10 +119,10 @@ export const CrossAssetWorkspace: React.FC = () => {
             </div>
 
             {loading || !data ? (
-              <div className="py-16 text-center text-slate-500 font-mono text-xs">Loading correlation matrix...</div>
+              <div className="py-16 text-center text-slate-400 font-mono text-xs">Loading correlation matrix…</div>
             ) : (
               <div className="overflow-x-auto mt-2">
-                <table className="w-full text-[11px] font-mono text-center border-collapse">
+                <table className="w-full text-[11px] font-mono text-center border-collapse tabular-nums">
                   <thead>
                     <tr>
                       <th className="py-2 px-1 text-left text-slate-400 text-[10px]"></th>
@@ -144,8 +144,12 @@ export const CrossAssetWorkspace: React.FC = () => {
                           return (
                             <td
                               key={colAsset}
+                              tabIndex={0}
+                              role="gridcell"
+                              aria-label={`Correlation between ${rowAsset} and ${colAsset}: ${val.toFixed(2)}`}
                               onMouseEnter={() => setHoveredPair({ assetA: rowAsset, assetB: colAsset, value: val })}
-                              className={`py-1.5 px-1 border border-[#0B0E14] cursor-pointer transition-all hover:scale-105 ${getHeatmapColor(
+                              onFocus={() => setHoveredPair({ assetA: rowAsset, assetB: colAsset, value: val })}
+                              className={`py-1.5 px-1 border border-[#0B0E14] cursor-pointer transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 ${getHeatmapColor(
                                 val
                               )}`}
                             >
