@@ -19,6 +19,7 @@ from backend.feed_manager import feed_manager
 class TestBackendStreaming(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         await feed_manager.initialize()
+        await feed_manager.switch_provider("SIMULATION")
         await feed_manager.start()
 
     async def asyncTearDown(self):
@@ -79,6 +80,15 @@ class TestBackendStreaming(unittest.IsolatedAsyncioTestCase):
         switched = await feed_manager.switch_provider("DHAN")
         self.assertTrue(switched)
         self.assertEqual(feed_manager.active_provider_name, "DHAN")
+
+        # Test switching to CHOICE_FINX
+        switched_finx = await feed_manager.switch_provider("CHOICE_FINX")
+        self.assertTrue(switched_finx)
+        self.assertEqual(feed_manager.active_provider_name, "CHOICE_FINX")
+        finx_tick = feed_manager.get_latest_tick("NIFTY")
+        self.assertIsNotNone(finx_tick)
+        self.assertEqual(finx_tick.symbol, "NIFTY")
+        self.assertTrue(finx_tick.is_live)
 
         # Switch back to SIMULATION
         switched_back = await feed_manager.switch_provider("SIMULATION")

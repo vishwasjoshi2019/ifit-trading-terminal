@@ -4,13 +4,16 @@ import asyncio
 from datetime import datetime, timezone
 import json
 import os
-from typing import Any, Optional
 from fastapi import WebSocket
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from .feed_interface import BaseMarketFeed
 from .feeds.simulation_feed import SimulationFeed
 from .feeds.dhan_feed import DhanFeed
 from .feeds.zerodha_feed import ZerodhaFeed
+from .feeds.choice_finx_feed import ChoiceFinXFeed
 from .models import (
     NormalizedTick,
     OrderBookDepth,
@@ -30,6 +33,7 @@ class FeedManager:
     def __init__(self) -> None:
         self.providers: dict[str, BaseMarketFeed] = {
             "SIMULATION": SimulationFeed(),
+            "CHOICE_FINX": ChoiceFinXFeed(),
             "DHAN": DhanFeed(),
             "ZERODHA": ZerodhaFeed(),
         }

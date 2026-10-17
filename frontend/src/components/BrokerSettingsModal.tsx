@@ -52,6 +52,11 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
 
   const providers = [
     {
+      id: 'CHOICE_FINX',
+      title: 'Choice FinX (OpenAPI & Live Feed)',
+      desc: 'Live tick-by-tick NSE/BSE feeds & execution adapter configured for User UFA113.',
+    },
+    {
       id: 'SIMULATION',
       title: 'Institutional Simulation (Brownian Motion)',
       desc: 'Synthetic ticks, L2 depth, CVD, and Black-Scholes Greeks. Zero broker credentials required.',
@@ -171,6 +176,8 @@ export const BrokerSettingsModal: React.FC<BrokerSettingsModalProps> = ({
             <div className="font-semibold text-gray-300">Live Credentials Setup:</div>
             <div>To activate live exchange feeds, populate your credentials in <code className="text-amber-400">.env</code>:</div>
             <pre className="text-[10px] bg-black/40 p-1.5 rounded text-gray-300 mt-1">
+              CHOICE_FINX_USER_ID=UFA113{'\n'}
+              CHOICE_FINX_TOKEN=your_jwt_token{'\n'}
               DHAN_CLIENT_ID=your_client_id{'\n'}
               DHAN_ACCESS_TOKEN=your_token
             </pre>
