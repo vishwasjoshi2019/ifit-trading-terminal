@@ -287,6 +287,17 @@ class ChoiceFinXFeed(BaseMarketFeed):
 
     def health(self) -> ProviderInfo:
         is_config = bool(self.token)
+        bound_ip = "49.207.55.65"
+        if self.token:
+            try:
+                import base64
+                payload_part = self.token.split('.')[1]
+                payload_part += '=' * (-len(payload_part) % 4)
+                data = json.loads(base64.urlsafe_b64decode(payload_part).decode('utf-8'))
+                bound_ip = data.get("CliIPAddress", "49.207.55.65")
+            except Exception:
+                pass
+
         return ProviderInfo(
             name=self.name,
             status="READY" if is_config else "MISSING_API_KEY",
@@ -294,7 +305,7 @@ class ChoiceFinXFeed(BaseMarketFeed):
             details={
                 "user_id": self.user_id,
                 "token_configured": is_config,
-                "client_ip_whitelist": "76.76.21.21",
+                "client_ip_whitelist": bound_ip,
                 "running": self._running,
                 "subscribed_symbols": list(self.subscribed_symbols),
             },
